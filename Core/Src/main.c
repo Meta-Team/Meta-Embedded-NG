@@ -109,7 +109,6 @@ int main(void)
   MX_USART10_UART_Init();
   MX_FDCAN1_Init();
   MX_FDCAN2_Init();
-  MX_FDCAN3_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
