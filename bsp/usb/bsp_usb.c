@@ -15,6 +15,7 @@
 
 static uint8_t *bsp_usb_rx_buffer; // 接收到的数据会被放在这里,buffer size为2048
 // 注意usb单个数据包(Full speed模式下)最大为64byte,超出可能会出现丢包情况
+// MC02改用了High speed模式
 
 uint8_t *USBInit(USB_Init_Config_s usb_conf)
 {
@@ -27,5 +28,5 @@ uint8_t *USBInit(USB_Init_Config_s usb_conf)
 
 void USBTransmit(uint8_t *buffer, uint16_t len)
 {
-    CDC_Transmit_FS(buffer, len); // 发送
+    CDC_Transmit_HS(buffer, len); // 发送
 }

@@ -25,7 +25,7 @@ typedef struct tmpgpio
     GPIO_PinState pin_state;    // 引脚状态,Set,Reset;not frequently used
     GPIO_EXTI_MODE_e exti_mode; // 外部中断模式 not frequently used
     uint16_t GPIO_Pin;          // 引脚号,
-    // 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
+    // 这些引脚是stm32h7xx_hal_gpio.h中定义的宏!!! 一定要注意
     // 随便取个名字当临时声明
     void (*gpio_model_callback)(struct tmpgpio *); // exti中断回调函数
     void *id;                                      // 区分不同的GPIO实例
@@ -42,7 +42,7 @@ typedef struct
     GPIO_PinState pin_state;    // 引脚状态,Set,Reset not frequently used
     GPIO_EXTI_MODE_e exti_mode; // 外部中断模式 not frequently used
     uint16_t GPIO_Pin;          // 引脚号,@note 这里的引脚号是GPIO_PIN_0,GPIO_PIN_1...
-    // 这些引脚是stm32f4xx_hal_gpio.h中定义的宏!!! 一定要注意
+    // 这些引脚是stm32h7xx_hal_gpio.h中定义的宏!!! 一定要注意
 
     void (*gpio_model_callback)(GPIOInstance *); // exti中断回调函数
     void *id;                                    // 区分不同的GPIO实例

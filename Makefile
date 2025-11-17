@@ -99,9 +99,13 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
-bsp/can/bsp_can.c \
 bsp/bsp_tools.c \
+bsp/can/bsp_can.c \
 bsp/dwt/bsp_dwt.c \
+bsp/gpio/bsp_gpio.c \
+bsp/spi/bsp_spi.c \
+bsp/usart/bsp_usart.c \
+bsp/usb/bsp_usb.c \
 bsp/log/bsp_log.c
 
 # ASM sources
@@ -195,6 +199,10 @@ C_INCLUDES =  \
 -Ibsp \
 -Ibsp/can \
 -Ibsp/dwt \
+-Ibsp/gpio \
+-Ibsp/spi \
+-Ibsp/usart \
+-Ibsp/usb \
 -Ibsp/log
 
 

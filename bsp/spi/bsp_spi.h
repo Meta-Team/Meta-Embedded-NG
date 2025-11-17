@@ -3,7 +3,7 @@
 #include "gpio.h"
 
 /* 根据开发板引出的spi引脚以及CubeMX中的初始化配置设定 */
-#define SPI_DEVICE_CNT 2       // C型开发板引出两路spi,分别连接BMI088/作为扩展IO在8pin牛角座引出
+#define SPI_DEVICE_CNT 2       // MC020开发板上使用的2路spi总线,SPI1接LCD,SPI2接BMI088
 #define MX_SPI_BUS_SLAVE_CNT 4 // 单个spi总线上挂载的从机数目
 
 /* spi transmit recv mode enumerate*/

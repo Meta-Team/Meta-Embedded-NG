@@ -140,11 +140,12 @@ void StartDefaultTask(void const * argument)
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN StartDefaultTask */
+  osThreadTerminate(NULL); // 避免空置和切换占用cpu
   /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+  // for(;;)
+  // {
+  //   osDelay(1);
+  // }
   /* USER CODE END StartDefaultTask */
 }
 
