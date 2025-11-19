@@ -211,6 +211,7 @@ C_INCLUDES =  \
 -Ibsp/usart \
 -Ibsp/usb \
 -Ibsp/log \
+-Imodule \
 -Imodule/algorithm
 
 
