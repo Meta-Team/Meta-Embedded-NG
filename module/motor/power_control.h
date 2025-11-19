@@ -19,7 +19,7 @@
 #include "controller.h"
 #include "motor_def.h"
 #include "stdint.h"
-#include "daemon.h"
+// #include "daemon.h"
 #include "dji_motor.h"
 
 

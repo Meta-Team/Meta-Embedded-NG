@@ -19,7 +19,7 @@
 #include "controller.h"
 #include "motor_def.h"
 #include "stdint.h"
-#include "daemon.h"
+// #include "daemon.h"
 
 #define DJI_MOTOR_CNT 12
 
@@ -60,7 +60,7 @@ typedef struct
     Motor_Type_e motor_type;        // 电机类型
     Motor_Working_Type_e stop_flag; // 启停标志
 
-    DaemonInstance* daemon;
+    // DaemonInstance* daemon;
     uint32_t feed_cnt;
     float dt;
 } DJIMotorInstance;

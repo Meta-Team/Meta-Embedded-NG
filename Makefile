@@ -112,7 +112,10 @@ module/algorithm/kalman_filter.c \
 module/algorithm/QuaternionEKF.c \
 module/algorithm/crc8.c \
 module/algorithm/crc16.c \
-module/algorithm/user_lib.c
+module/algorithm/user_lib.c \
+module/motor/DJImotor/dji_motor.c \
+module/motor/motor_task.c \
+module/motor/power_control.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -212,7 +215,9 @@ C_INCLUDES =  \
 -Ibsp/usb \
 -Ibsp/log \
 -Imodule \
--Imodule/algorithm
+-Imodule/algorithm \
+-Imodule/motor/DJImotor \
+-Imodule/motor \
 
 
 # compile gcc flags

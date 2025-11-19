@@ -104,8 +104,6 @@ typedef enum
     GM6020,
     M3508,
     M2006,
-    LK9025,
-    HT04,
 } Motor_Type_e;
 
 /**

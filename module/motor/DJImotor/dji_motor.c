@@ -20,12 +20,12 @@ static DJIMotorInstance *dji_motor_instance[DJI_MOTOR_CNT] = {NULL}; // 会在co
  * can2: [3]:0x1FF,[4]:0x200,[5]:0x2FF
  */
 static CANInstance sender_assignment[6] = {
-    [0] = {.can_handle = &hcan1, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-    [1] = {.can_handle = &hcan1, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-    [2] = {.can_handle = &hcan1, .txconf.StdId = 0x2ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-    [3] = {.can_handle = &hcan2, .txconf.StdId = 0x1ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-    [4] = {.can_handle = &hcan2, .txconf.StdId = 0x200, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
-    [5] = {.can_handle = &hcan2, .txconf.StdId = 0x2ff, .txconf.IDE = CAN_ID_STD, .txconf.RTR = CAN_RTR_DATA, .txconf.DLC = 0x08, .tx_buff = {0}},
+    [0] = {.can_handle = &hfdcan1, .txconf.Identifier = 0x1ff, .txconf.IdType = FDCAN_STANDARD_ID, .txconf.TxFrameType = FDCAN_DATA_FRAME, .txconf.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
+    [1] = {.can_handle = &hfdcan1, .txconf.Identifier = 0x200, .txconf.IdType = FDCAN_STANDARD_ID, .txconf.TxFrameType = FDCAN_DATA_FRAME, .txconf.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
+    [2] = {.can_handle = &hfdcan1, .txconf.Identifier = 0x2ff, .txconf.IdType = FDCAN_STANDARD_ID, .txconf.TxFrameType = FDCAN_DATA_FRAME, .txconf.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
+    [3] = {.can_handle = &hfdcan2, .txconf.Identifier = 0x1ff, .txconf.IdType = FDCAN_STANDARD_ID, .txconf.TxFrameType = FDCAN_DATA_FRAME, .txconf.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
+    [4] = {.can_handle = &hfdcan2, .txconf.Identifier = 0x200, .txconf.IdType = FDCAN_STANDARD_ID, .txconf.TxFrameType = FDCAN_DATA_FRAME, .txconf.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
+    [5] = {.can_handle = &hfdcan2, .txconf.Identifier = 0x2ff, .txconf.IdType = FDCAN_STANDARD_ID, .txconf.TxFrameType = FDCAN_DATA_FRAME, .txconf.DataLength = FDCAN_DLC_BYTES_8, .tx_buff = {0}},
 };
 
 /**
@@ -51,12 +51,12 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         if (motor_id < 4) // 根据ID分组
         {
             motor_send_num = motor_id;
-            motor_grouping = config->can_handle == &hcan1 ? 1 : 4;
+            motor_grouping = config->can_handle == &hfdcan1 ? 1 : 4;
         }
         else
         {
             motor_send_num = motor_id - 4;
-            motor_grouping = config->can_handle == &hcan1 ? 0 : 3;
+            motor_grouping = config->can_handle == &hfdcan1 ? 0 : 3;
         }
 
         // 计算接收id并设置分组发送id
@@ -71,7 +71,7 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
             if (dji_motor_instance[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_instance[i]->motor_can_instance->rx_id == config->rx_id)
             {
                 LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
-                uint16_t can_bus = config->can_handle == &hcan1 ? 1 : 2;
+                uint16_t can_bus = config->can_handle == &hfdcan1 ? 1 : 2;
                 while (1) // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
                     LOGERROR("[dji_motor] id [%d], can_bus [%d]", config->rx_id, can_bus);
             }
@@ -82,12 +82,12 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
         if (motor_id < 4)
         {
             motor_send_num = motor_id;
-            motor_grouping = config->can_handle == &hcan1 ? 0 : 3;
+            motor_grouping = config->can_handle == &hfdcan1 ? 0 : 3;
         }
         else
         {
             motor_send_num = motor_id - 4;
-            motor_grouping = config->can_handle == &hcan1 ? 2 : 5;
+            motor_grouping = config->can_handle == &hfdcan1 ? 2 : 5;
         }
 
         config->rx_id = 0x204 + motor_id + 1;   // 把ID+1,进行分组设置
@@ -100,7 +100,7 @@ static void MotorSenderGrouping(DJIMotorInstance *motor, CAN_Init_Config_s *conf
             if (dji_motor_instance[i]->motor_can_instance->can_handle == config->can_handle && dji_motor_instance[i]->motor_can_instance->rx_id == config->rx_id)
             {
                 LOGERROR("[dji_motor] ID crash. Check in debug mode, add dji_motor_instance to watch to get more information.");
-                uint16_t can_bus = config->can_handle == &hcan1 ? 1 : 2;
+                uint16_t can_bus = config->can_handle == &hfdcan1 ? 1 : 2;
                 while (1) // 6020的id 1-4和2006/3508的id 5-8会发生冲突(若有注册,即1!5,2!6,3!7,4!8) (1!5!,LTC! (((不是)
                     LOGERROR("[dji_motor] id [%d], can_bus [%d]", config->rx_id, can_bus);
             }
@@ -127,7 +127,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
     DJIMotorInstance *motor = (DJIMotorInstance *)_instance->id;
     DJI_Motor_Measure_s *measure = &motor->measure; // measure要多次使用,保存指针减小访存开销
 
-    DaemonReload(motor->daemon);
+    // DaemonReload(motor->daemon);
     motor->dt = DWT_GetDeltaT(&motor->feed_cnt);
 
     // 解析数据并对电流和速度进行滤波,电机的反馈报文具体格式见电机说明手册
@@ -151,7 +151,7 @@ static void DecodeDJIMotor(CANInstance *_instance)
 static void DJIMotorLostCallback(void *motor_ptr)
 {
     DJIMotorInstance *motor = (DJIMotorInstance *)motor_ptr;
-    uint16_t can_bus = motor->motor_can_instance->can_handle == &hcan1 ? 1 : 2;
+    uint16_t can_bus = motor->motor_can_instance->can_handle == &hfdcan1 ? 1 : 2;
     LOGWARNING("[dji_motor] Motor lost, can bus [%d] , id [%d]", can_bus, motor->motor_can_instance->tx_id);
 }
 
@@ -184,12 +184,12 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     instance->motor_can_instance = CANRegister(&config->can_init_config);
 
     // 注册守护线程
-    Daemon_Init_Config_s daemon_config = {
-        .callback = DJIMotorLostCallback,
-        .owner_id = instance,
-        .reload_count = 2, // 20ms未收到数据则丢失
-    };
-    instance->daemon = DaemonRegister(&daemon_config);
+    // Daemon_Init_Config_s daemon_config = {
+    //     .callback = DJIMotorLostCallback,
+    //     .owner_id = instance,
+    //     .reload_count = 2, // 20ms未收到数据则丢失
+    // };
+    // instance->daemon = DaemonRegister(&daemon_config);
 
     DJIMotorEnable(instance);
     dji_motor_instance[idx++] = instance;
