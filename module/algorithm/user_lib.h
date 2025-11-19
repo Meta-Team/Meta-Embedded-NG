@@ -16,7 +16,7 @@
 #include "stdint.h"
 #include "main.h"
 #include "cmsis_os.h"
-#include "stm32f407xx.h"
+#include "stm32h723xx.h"
 #include "arm_math.h"
 
 

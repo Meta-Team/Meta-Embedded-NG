@@ -106,7 +106,13 @@ bsp/gpio/bsp_gpio.c \
 bsp/spi/bsp_spi.c \
 bsp/usart/bsp_usart.c \
 bsp/usb/bsp_usb.c \
-bsp/log/bsp_log.c
+bsp/log/bsp_log.c \
+module/algorithm/controller.c \
+module/algorithm/kalman_filter.c \
+module/algorithm/QuaternionEKF.c \
+module/algorithm/crc8.c \
+module/algorithm/crc16.c \
+module/algorithm/user_lib.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -194,6 +200,7 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/SEGGER/Config \
 -IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+-IMiddlewares/ST/ARM/DSP/Inc \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -Ibsp \
@@ -204,7 +211,7 @@ C_INCLUDES =  \
 -Ibsp/usart \
 -Ibsp/usb \
 -Ibsp/log \
--IMiddlewares/ST/ARM/DSP/Inc
+-Imodule/algorithm
 
 
 # compile gcc flags
