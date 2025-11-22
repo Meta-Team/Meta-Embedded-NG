@@ -14,6 +14,10 @@
 #define DM_V_MAX  45.0f
 #define DM_T_MIN  (-18.0f)
 #define DM_T_MAX   18.0f
+#define DM_KP_MIN 0.0f
+#define DM_KP_MAX 500.0f
+#define DM_KD_MIN 0.0f
+#define DM_KD_MAX 5.0f
 
 /* DM电机CAN反馈信息 */
 typedef struct 
@@ -29,7 +33,7 @@ typedef struct
     int32_t total_round;
 } DM_Motor_Measure_s;
 
-/* DJI电机CAN发送信息 */
+/* DM电机CAN发送信息 */
 typedef struct
 {
     uint16_t position_des;
@@ -47,6 +51,8 @@ typedef struct
     // PIDInstance current_PID;
     // PIDInstance speed_PID;
     // PIDInstance angle_PID;
+    float Kp;
+    float Kd;
     float *other_angle_feedback_ptr;
     float *other_speed_feedback_ptr;
     float *speed_feedforward_ptr;
