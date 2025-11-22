@@ -73,6 +73,8 @@ DMMotorInstance *DMMotorInit(Motor_Init_Config_s *config)
     // PIDInit(&motor->current_PID, &config->controller_param_init_config.current_PID);
     // PIDInit(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
     // PIDInit(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
+    motor->Kp = config->controller_param_init_config.angle_PID.Kp;
+    motor->Kd = config->controller_param_init_config.speed_PID.Kd;
     motor->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     motor->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
