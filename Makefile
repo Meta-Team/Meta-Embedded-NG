@@ -114,6 +114,7 @@ module/algorithm/crc8.c \
 module/algorithm/crc16.c \
 module/algorithm/user_lib.c \
 module/motor/DJImotor/dji_motor.c \
+module/motor/DMmotor/dmmotor.c \
 module/motor/motor_task.c \
 module/motor/power_control.c
 
@@ -217,6 +218,7 @@ C_INCLUDES =  \
 -Imodule \
 -Imodule/algorithm \
 -Imodule/motor/DJImotor \
+-Imodule/motor/DMmotor \
 -Imodule/motor \
 
 

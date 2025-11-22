@@ -4,13 +4,14 @@
 #include "user_lib.h"
 #include "cmsis_os.h"
 #include "string.h"
-#include "daemon.h"
+// #include "daemon.h"
 #include "stdlib.h"
 #include "bsp_log.h"
 
 static uint8_t idx;
 static DMMotorInstance *dm_motor_instance[DM_MOTOR_CNT];
 static osThreadId dm_task_handle[DM_MOTOR_CNT];
+
 /* 两个用于将uint值和float值进行映射的函数,在设定发送值和解析反馈值时使用 */
 static uint16_t float_to_uint(float x, float x_min, float x_max, uint8_t bits)
 {
@@ -39,7 +40,7 @@ static void DMMotorDecode(CANInstance *motor_can)
     DMMotorInstance *motor = (DMMotorInstance *)motor_can->id;
     DM_Motor_Measure_s *measure = &(motor->measure); // 将can实例中保存的id转换成电机实例的指针
 
-    DaemonReload(motor->motor_daemon);
+    // DaemonReload(motor->motor_daemon);
 
     measure->last_position = measure->position;
     tmp = (uint16_t)((rxbuff[1] << 8) | rxbuff[2]);
@@ -69,9 +70,9 @@ DMMotorInstance *DMMotorInit(Motor_Init_Config_s *config)
     memset(motor, 0, sizeof(DMMotorInstance));
     
     motor->motor_settings = config->controller_setting_init_config;
-    PIDInit(&motor->current_PID, &config->controller_param_init_config.current_PID);
-    PIDInit(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
-    PIDInit(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
+    // PIDInit(&motor->current_PID, &config->controller_param_init_config.current_PID);
+    // PIDInit(&motor->speed_PID, &config->controller_param_init_config.speed_PID);
+    // PIDInit(&motor->angle_PID, &config->controller_param_init_config.angle_PID);
     motor->other_angle_feedback_ptr = config->controller_param_init_config.other_angle_feedback_ptr;
     motor->other_speed_feedback_ptr = config->controller_param_init_config.other_speed_feedback_ptr;
 
@@ -79,12 +80,12 @@ DMMotorInstance *DMMotorInit(Motor_Init_Config_s *config)
     config->can_init_config.id = motor;
     motor->motor_can_instace = CANRegister(&config->can_init_config);
 
-    Daemon_Init_Config_s conf = {
-        .callback = DMMotorLostCallback,
-        .owner_id = motor,
-        .reload_count = 10,
-    };
-    motor->motor_daemon = DaemonRegister(&conf);
+    // Daemon_Init_Config_s conf = {
+    //     .callback = DMMotorLostCallback,
+    //     .owner_id = motor,
+    //     .reload_count = 10,
+    // };
+    // motor->motor_daemon = DaemonRegister(&conf);
 
     DMMotorEnable(motor);
     DMMotorSetMode(DM_CMD_MOTOR_MODE, motor);
@@ -121,10 +122,10 @@ void DMMotorTask(void const *argument)
 {
     float  pid_ref, set;
     DMMotorInstance *motor = (DMMotorInstance *)argument;
-   //DM_Motor_Measure_s *measure = &motor->measure;
+    // DM_Motor_Measure_s *measure = &motor->measure;
     Motor_Control_Setting_s *setting = &motor->motor_settings;
-    //CANInstance *motor_can = motor->motor_can_instace;
-    //uint16_t tmp;
+    // CANInstance *motor_can = motor->motor_can_instace;
+    // uint16_t tmp;
     DMMotor_Send_s motor_send_mailbox;
     while (1)
     {
