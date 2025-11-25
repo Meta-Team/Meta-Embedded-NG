@@ -125,6 +125,7 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle);
 
 /**
  * @brief 检查遥控器是否在线,若尚未初始化也视为离线
+ * 由于暂时没有启用Daemon,所以该函数暂时无效
  *
  * @return uint8_t 1:在线 0:离线
  */

@@ -3,7 +3,7 @@
 #include "bsp_usart.h"
 #include "memory.h"
 #include "stdlib.h"
-#include "daemon.h"
+// #include "daemon.h"
 #include "bsp_log.h"
 
 #define REMOTE_CONTROL_FRAME_SIZE 18u // 遥控器接收的buffer大小
@@ -14,7 +14,7 @@ static uint8_t rc_init_flag = 0; // 遥控器初始化标志位
 
 // 遥控器拥有的串口实例,因为遥控器是单例,所以这里只有一个,就不封装了
 static USARTInstance *rc_usart_instance;
-static DaemonInstance *rc_daemon_instance;
+// static DaemonInstance *rc_daemon_instance;
 
 /**
  * @brief 矫正遥控器摇杆的值,超过660或者小于-660的值都认为是无效值,置0
@@ -93,7 +93,7 @@ static void sbus_to_rc(const uint8_t *sbus_buf)
  */
 static void RemoteControlRxCallback()
 {
-    DaemonReload(rc_daemon_instance);         // 先喂狗
+    // DaemonReload(rc_daemon_instance);         // 先喂狗
     sbus_to_rc(rc_usart_instance->recv_buff); // 进行协议解析
 }
 
@@ -117,20 +117,21 @@ RC_ctrl_t *RemoteControlInit(UART_HandleTypeDef *rc_usart_handle)
     rc_usart_instance = USARTRegister(&conf);
 
     // 进行守护进程的注册,用于定时检查遥控器是否正常工作
-    Daemon_Init_Config_s daemon_conf = {
-        .reload_count = 10, // 100ms未收到数据视为离线,遥控器的接收频率实际上是1000/14Hz(大约70Hz)
-        .callback = RCLostCallback,
-        .owner_id = NULL, // 只有1个遥控器,不需要owner_id
-    };
-    rc_daemon_instance = DaemonRegister(&daemon_conf);
+    // Daemon_Init_Config_s daemon_conf = {
+    //     .reload_count = 10, // 100ms未收到数据视为离线,遥控器的接收频率实际上是1000/14Hz(大约70Hz)
+    //     .callback = RCLostCallback,
+    //     .owner_id = NULL, // 只有1个遥控器,不需要owner_id
+    // };
+    // rc_daemon_instance = DaemonRegister(&daemon_conf);
 
     rc_init_flag = 1;
     return rc_ctrl;
 }
 
+// 由于暂时没有启用Daemon,所以该函数暂时无效
 uint8_t RemoteControlIsOnline()
 {
-    if (rc_init_flag)
-        return DaemonIsOnline(rc_daemon_instance);
+    // if (rc_init_flag)
+    //     return DaemonIsOnline(rc_daemon_instance);
     return 0;
 }
