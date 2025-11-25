@@ -119,7 +119,7 @@ void DMMotorOuterLoop(DMMotorInstance *motor, Closeloop_Type_e type)
 }
 
 
-//@Todo: 目前只实现了力控，更多位控PID等请自行添加
+//@Todo: 目前只实现了MIT模式下速度PID
 void DMMotorTask(void const *argument)
 {
     float  pid_ref, set;
@@ -136,11 +136,12 @@ void DMMotorTask(void const *argument)
         set = pid_ref;
         if (setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
             set *= -1;
-       
-        LIMIT_MIN_MAX(set, DM_T_MIN, DM_T_MAX);
+        
+        // 目前只实现了MIT模式下速度PID
+        LIMIT_MIN_MAX(set, DM_V_MIN, DM_V_MAX);
         motor_send_mailbox.position_des = float_to_uint(0, DM_P_MIN, DM_P_MAX, 16);
-        motor_send_mailbox.velocity_des = float_to_uint(0, DM_V_MIN, DM_V_MAX, 12);
-        motor_send_mailbox.torque_des = float_to_uint(pid_ref, DM_T_MIN, DM_T_MAX, 12);
+        motor_send_mailbox.velocity_des = float_to_uint(set, DM_V_MIN, DM_V_MAX, 12);
+        motor_send_mailbox.torque_des = float_to_uint(0, DM_T_MIN, DM_T_MAX, 12);
         // motor_send_mailbox.Kp = 0;
         // motor_send_mailbox.Kd = 0;
         motor_send_mailbox.Kp = float_to_uint(motor->Kp, DM_KP_MIN, DM_KP_MAX, 12);
