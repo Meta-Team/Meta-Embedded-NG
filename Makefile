@@ -218,10 +218,12 @@ C_INCLUDES =  \
 -Ibsp/log \
 -Imodule \
 -Imodule/algorithm \
+-Imodule/message_center \
+-Imodule/motor \
 -Imodule/motor/DJImotor \
 -Imodule/motor/DMmotor \
--Imodule/remote \
--Imodule/motor
+-Imodule/remote
+
 
 
 # compile gcc flags
