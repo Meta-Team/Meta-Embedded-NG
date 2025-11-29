@@ -18,6 +18,10 @@
 static uint8_t idx;
 static USARTInstance *usart_instance[DEVICE_USART_CNT] = {NULL};
 
+// 串口接收缓冲区,在STM32H7中需要在SRAM D2区域以支持DMA接收
+uint8_t (*recv_buffs)[USART_RXBUFF_LIMIT] = (uint8_t (*)[USART_RXBUFF_LIMIT])0x30000000;
+
+
 /**
  * @brief 启动串口服务,会在每个实例注册之后自动启用接收,当前实现为DMA接收,后续可能添加IT和BLOCKING接收
  *
@@ -50,6 +54,7 @@ USARTInstance *USARTRegister(USART_Init_Config_s *init_config)
     memset(instance, 0, sizeof(USARTInstance));
 
     instance->usart_handle = init_config->usart_handle;
+    instance->recv_buff = recv_buffs[idx];
     instance->recv_buff_size = init_config->recv_buff_size;
     instance->module_callback = init_config->module_callback;
 
