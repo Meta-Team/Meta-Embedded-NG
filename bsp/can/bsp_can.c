@@ -171,9 +171,9 @@ static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hcan, uint32_t fifox)
             {
                 if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
                 {
-                    // FDCAN的DataLength是DLC代码,需要转换为实际字节数
-                    can_instance[i]->rx_len = (rxconf.DataLength >> 16) & 0x0F; // 提取实际字节数
-                    if (can_instance[i]->rx_len > 8) can_instance[i]->rx_len = 8;
+                    // FDCAN的DataLength是DLC代码,根据文档实际就是长度
+                    can_instance[i]->rx_len = rxconf.DataLength; // 提取实际字节数
+                    if (can_instance[i]->rx_len > 8) can_instance[i]->rx_len = 8;  // 安全检查
                     memcpy(can_instance[i]->rx_buff, can_rx_buff, can_instance[i]->rx_len); // 消息拷贝到对应实例
                     can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
                 }
