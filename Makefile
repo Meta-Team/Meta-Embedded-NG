@@ -99,6 +99,9 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
+application/chassis/agv_chassis.c \
+application/cmd/dt7_cmd.c \
+application/sentry/sentry.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \
 bsp/dwt/bsp_dwt.c \

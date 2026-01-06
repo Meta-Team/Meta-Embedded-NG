@@ -30,7 +30,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "sentry.h"
+#include "bsp_log.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -112,7 +113,8 @@ int main(void)
   MX_TIM2_Init();
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
-
+  SentryInit();
+  LOGINFO("[main] HAL Init and SentryInit() done");
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */
