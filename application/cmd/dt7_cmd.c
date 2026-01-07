@@ -30,9 +30,9 @@ void RobotCMDInit()
 
 static void RemoteControlSet()
 {
-    chassis_cmd_send.vx = 0.01f * (float)rc_data[TEMP].rc.rocker_l_;  // 左水平摇杆
-    chassis_cmd_send.vy = 0.01f * (float)rc_data[TEMP].rc.rocker_l1; // 左垂直摇杆
-    chassis_cmd_send.wz = 0; // 暂时设置为0
+    chassis_cmd_send.vx = 0.01f * (float)rc_data[TEMP].rc.rocker_l1;  // 左垂直摇杆
+    chassis_cmd_send.vy = 0; // 暂时设置为0
+    chassis_cmd_send.wz = -0.01f * (float)rc_data[TEMP].rc.rocker_l_; // 左水平摇杆
 }
 void RobotCMDTask()
 {

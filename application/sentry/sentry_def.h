@@ -17,10 +17,10 @@
 #define RADIUS_WHEEL_M (RADIUS_WHEEL / 1000.0f)  // 转换为米
 #define PERIMETER_WHEEL (RADIUS_WHEEL_M * 2 * PI) // 轮子周长
 #define REDUCTION_RATIO_WHEEL 19.0f  // 电机减速比
-#define RF_WHEEL_POS_OFFSET_ANGLE 0.0f   // 右前轮舵面初始位置偏移角度(度)
-#define RB_WHEEL_POS_OFFSET_ANGLE 0.0f  // 右后轮
-#define LB_WHEEL_POS_OFFSET_ANGLE 0.0f // 左后轮
-#define LF_WHEEL_POS_OFFSET_ANGLE 0.0f  // 左前轮
+#define RF_WHEEL_POS_OFFSET_ANGLE 160.0f   // 右前轮舵面初始位置偏移角度(度)
+#define RB_WHEEL_POS_OFFSET_ANGLE -50.0f  // 右后轮
+#define LB_WHEEL_POS_OFFSET_ANGLE 20.0f // 左后轮
+#define LF_WHEEL_POS_OFFSET_ANGLE -150.0f  // 左前轮
 
 #pragma pack(1)
 // 底盘模式设置
