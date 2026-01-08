@@ -18,45 +18,56 @@
 
 ```c
 
-#define MX_REGISTER_DEVICE_CNT 12  // maximum number of device can be registered to CAN service, this number depends on the load of CAN bus.
-#define MX_CAN_FILTER_CNT (4 * 14) // temporarily useless
-#define DEVICE_CAN_CNT 2           // CAN1,CAN2
+#define CAN_MX_REGISTER_CNT 16     // 最大CAN设备注册数量,取决于CAN总线负载
+#define MX_FDCAN_FILTER_CNT 28     // FDCAN每个实例最多支持28个标准ID过滤器
+#define DEVICE_CAN_CNT 3           // H723有FDCAN1,FDCAN2,FDCAN3
+
+/* CAN ID类型枚举,用于区分标准ID(11位)和扩展ID(29位) */
+typedef enum
+{
+    CAN_ID_STD = 0,  // 标准ID,11位
+    CAN_ID_EXT = 1   // 扩展ID,29位
+} CAN_ID_Type_e;
 
 /* can instance typedef, every module registered to CAN should have this variable */
 typedef struct _
 {
-    CAN_HandleTypeDef *can_handle; // can句柄
-    CAN_TxHeaderTypeDef txconf;    // CAN报文发送配置
-    uint32_t tx_id;                // 发送id
-    uint32_t tx_mailbox;           // CAN消息填入的邮箱号
-    uint8_t tx_buff[8];            // 发送缓存,发送消息长度可以通过CANSetDLC()设定,最大为8
-    uint8_t rx_buff[8];            // 接收缓存,最大消息长度为8
-    uint32_t rx_id;                // 接收id
-    uint8_t rx_len;                // 接收长度,可能为0-8
+    FDCAN_HandleTypeDef *can_handle; // can句柄
+    FDCAN_TxHeaderTypeDef txconf;    // FDCAN报文发送配置
+    uint32_t tx_id;                  // 发送id
+    uint8_t tx_buff[8];              // 发送缓存,发送消息长度可以通过CANSetDLC()设定,最大为8
+    uint8_t rx_buff[8];              // 接收缓存,最大消息长度为8
+    uint32_t rx_id;                  // 接收id
+    uint8_t rx_len;                  // 接收长度,可能为0-8
+    CAN_ID_Type_e id_type;           // ID类型,标准ID或扩展ID
     // 接收的回调函数,用于解析接收到的数据
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
     void *id;                                // 使用can外设的模块指针(即id指向的模块拥有此can实例,是父子关系)
 } CANInstance;
 
+/* CAN实例初始化结构体,将此结构体指针传入注册函数 */
 typedef struct 
 {
-    CAN_HandleTypeDef* can_handle;
-    uint32_t tx_id;
-    uint32_t rx_id;
-    void (*can_module_callback)(can_instance*);
-    void* id;
-} can_instance_config;
+    FDCAN_HandleTypeDef* can_handle;              // can句柄
+    uint32_t tx_id;                               // 发送id
+    uint32_t rx_id;                               // 接收id
+    CAN_ID_Type_e id_type;                        // ID类型,CAN_ID_STD(标准11位)或CAN_ID_EXT(扩展29位)
+    void (*can_module_callback)(CANInstance*);    // 处理接收数据的回调函数
+    void* id;                                     // 拥有can实例的模块地址
+} CAN_Init_Config_s;
 
-typedef void (*can_callback)(can_instance*);
+typedef void (*can_callback)(CANInstance*);
 ```
 
-- `MX_REGISTER_DEVICE_CNT`是最大的CAN设备注册数量，当每个设备的发送频率都较高时，设备过多会产生总线拥塞从而出现丢包和数据错误的情况。
-- `MX_CAN_FILTER_CNT`是最大的CAN接收过滤器数量，两个CAN共享标号0~27共28个过滤器。这部分内容比较繁杂，暂时不用理解，有兴趣自行参考MCU的数据手册。当前为简单起见，每个过滤器只设置一组规则用于控制一个id的过滤。
-- `DEVICE_CAN_CNT`是MCU拥有的CAN硬件数量。
+- `CAN_MX_REGISTER_CNT`是最大的CAN设备注册数量，当每个设备的发送频率都较高时，设备过多会产生总线拥塞从而出现丢包和数据错误的情况。
+- `MX_FDCAN_FILTER_CNT`是最大的CAN接收过滤器数量，FDCAN每个实例最多支持28个过滤器。标准ID和扩展ID使用独立的过滤器索引。
+- `DEVICE_CAN_CNT`是MCU拥有的CAN硬件数量，H723有FDCAN1、FDCAN2、FDCAN3共3个。
 
-- `can_instance`是一个CAN实例。注意，CAN作为一个总线设备，一条总线上可以挂载多个设备，因此多个设备可以共享同一个CAN硬件。其成员变量包括发送id，发送邮箱（不需要管，只是一个32位变量，CAN收发器会自动设置其值），发送buff以及接收buff，还有接收id和接收协议解析回调函数。**由于目前使用的设备每个数据帧的长度都是8，因此收发buff长度暂时固定为8**。定义该结构体的时候使用了一个技巧，使得在结构体内部可以用结构体自身的指针作为成员，即`can_module_callback`的定义。
+- `CAN_ID_Type_e`是CAN ID类型枚举，用于区分标准ID（11位，范围0x000-0x7FF）和扩展ID（29位，范围0x00000000-0x1FFFFFFF）。
 
-- `can_instance_config`是用于初始化CAN实例的结构，在调用CAN实例的初始化函数时传入（下面介绍函数时详细介绍）。
+- `CANInstance`是一个CAN实例。注意，CAN作为一个总线设备，一条总线上可以挂载多个设备，因此多个设备可以共享同一个CAN硬件。其成员变量包括发送id，发送buff以及接收buff，还有接收id、ID类型和接收协议解析回调函数。**由于目前使用的设备每个数据帧的长度都是8，因此收发buff长度暂时固定为8**。定义该结构体的时候使用了一个技巧，使得在结构体内部可以用结构体自身的指针作为成员，即`can_module_callback`的定义。
+
+- `CAN_Init_Config_s`是用于初始化CAN实例的结构，在调用CAN实例的初始化函数时传入（下面介绍函数时详细介绍）。**注意：需要通过`id_type`字段指定使用标准ID还是扩展ID**。
 
 - `can_module_callback()`是模块提供给CAN接收中断回调函数使用的协议解析函数指针。对于每个需要CAN的模块，需要定义一个这样的函数用于解包数据。
 - 每个使用CAN外设的module，都需要在其内部定义一个`can_instance*`。
@@ -70,13 +81,26 @@ void CANSetDLC(CANInstance *_instance, uint8_t length); // 设置发送帧的数
 uint8_t CANTransmit(can_instance* _instance, uint8_t timeout);
 ```
 
-`CANRegister`是用于初始化CAN实例的接口，module层的模块对象（也应当为一个结构体）内要包含一个`usart_instance`。调用时传入实例指针，以及用于初始化的config。`CANRegister`应当在module的初始化函数内被调用，推荐config采用以下的方式定义，更加直观明了：
+`CANRegister`是用于初始化CAN实例的接口，module层的模块对象（也应当为一个结构体）内要包含一个`CANInstance`。调用时传入实例指针，以及用于初始化的config。`CANRegister`应当在module的初始化函数内被调用，推荐config采用以下的方式定义，更加直观明了：
 
 ```c
-can_instance_config config={.can_handle=&hcan1,
-							.tx_id=0x005,
-							.rx_id=0x200,
-							can_module_callback=MotorCallback}
+// 使用标准ID(11位)的示例
+CAN_Init_Config_s config_std = {
+    .can_handle = &hfdcan1,
+    .tx_id = 0x005,
+    .rx_id = 0x200,
+    .id_type = CAN_ID_STD,              // 标准ID,11位
+    .can_module_callback = MotorCallback
+};
+
+// 使用扩展ID(29位)的示例
+CAN_Init_Config_s config_ext = {
+    .can_handle = &hfdcan1,
+    .tx_id = 0x18FF0001,
+    .rx_id = 0x18FF0002,
+    .id_type = CAN_ID_EXT,              // 扩展ID,29位
+    .can_module_callback = DeviceCallback
+};
 ```
 
 `CANTransmit()`是通过模块通过其拥有的CAN实例发送数据的接口，调用时传入对应的instance。在发送之前，应当给instance内的`send_buff`赋值。

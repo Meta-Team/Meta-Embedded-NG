@@ -181,6 +181,7 @@ DJIMotorInstance *DJIMotorInit(Motor_Init_Config_s *config)
     // 注册电机到CAN总线
     config->can_init_config.can_module_callback = DecodeDJIMotor; // set callback
     config->can_init_config.id = instance;                        // set id,eq to address(it is identity)
+    config->can_init_config.id_type = CAN_ID_STD;                 // set id type
     instance->motor_can_instance = CANRegister(&config->can_init_config);
 
     // 注册守护线程

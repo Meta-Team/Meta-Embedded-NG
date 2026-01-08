@@ -28,20 +28,38 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
 static void CANAddFilter(CANInstance *_instance)
 {
     FDCAN_FilterTypeDef fdcan_filter_conf;
-    static uint8_t fdcan1_filter_idx = 0, fdcan2_filter_idx = 0, fdcan3_filter_idx = 0; // 每个FDCAN实例有独立的过滤器索引
+    static uint8_t fdcan1_std_filter_idx = 0, fdcan2_std_filter_idx = 0, fdcan3_std_filter_idx = 0; // 标准ID过滤器索引
+    static uint8_t fdcan1_ext_filter_idx = 0, fdcan2_ext_filter_idx = 0, fdcan3_ext_filter_idx = 0; // 扩展ID过滤器索引
 
-    fdcan_filter_conf.IdType = FDCAN_STANDARD_ID;              // 使用标准ID
-    // 根据can_handle判断是FDCAN1、FDCAN2还是FDCAN3,然后自增
-    if (_instance->can_handle == &hfdcan1)
-        fdcan_filter_conf.FilterIndex = fdcan1_filter_idx++;
-    else if (_instance->can_handle == &hfdcan2)
-        fdcan_filter_conf.FilterIndex = fdcan2_filter_idx++;
+    // 根据ID类型配置过滤器
+    if (_instance->id_type == CAN_ID_EXT)
+    {
+        fdcan_filter_conf.IdType = FDCAN_EXTENDED_ID;          // 使用扩展ID(29位)
+        // 根据can_handle判断是FDCAN1、FDCAN2还是FDCAN3,然后自增
+        if (_instance->can_handle == &hfdcan1)
+            fdcan_filter_conf.FilterIndex = fdcan1_ext_filter_idx++;
+        else if (_instance->can_handle == &hfdcan2)
+            fdcan_filter_conf.FilterIndex = fdcan2_ext_filter_idx++;
+        else
+            fdcan_filter_conf.FilterIndex = fdcan3_ext_filter_idx++;
+        fdcan_filter_conf.FilterID1 = _instance->rx_id;        // 过滤ID
+        fdcan_filter_conf.FilterID2 = 0x1FFFFFFF;              // 掩码,0x1FFFFFFF表示精确匹配29位扩展ID
+    }
     else
-        fdcan_filter_conf.FilterIndex = fdcan3_filter_idx++;
+    {
+        fdcan_filter_conf.IdType = FDCAN_STANDARD_ID;          // 使用标准ID(11位)
+        // 根据can_handle判断是FDCAN1、FDCAN2还是FDCAN3,然后自增
+        if (_instance->can_handle == &hfdcan1)
+            fdcan_filter_conf.FilterIndex = fdcan1_std_filter_idx++;
+        else if (_instance->can_handle == &hfdcan2)
+            fdcan_filter_conf.FilterIndex = fdcan2_std_filter_idx++;
+        else
+            fdcan_filter_conf.FilterIndex = fdcan3_std_filter_idx++;
+        fdcan_filter_conf.FilterID1 = _instance->rx_id;        // 过滤ID
+        fdcan_filter_conf.FilterID2 = 0x7FF;                   // 掩码,0x7FF表示精确匹配11位标准ID
+    }
     fdcan_filter_conf.FilterType = FDCAN_FILTER_MASK;          // 使用掩码模式
     fdcan_filter_conf.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;  // 消息路由到RxFifo0
-    fdcan_filter_conf.FilterID1 = _instance->rx_id;            // 过滤ID
-    fdcan_filter_conf.FilterID2 = 0x7FF;                        // 掩码,0x7FF表示精确匹配11位标准ID
 
     HAL_FDCAN_ConfigFilter(_instance->can_handle, &fdcan_filter_conf);
 }
@@ -89,7 +107,7 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     memset(instance, 0, sizeof(CANInstance));                           // 分配的空间未必是0,所以要先清空
     // 进行发送报文的配置
     instance->txconf.Identifier = config->tx_id;          // 发送id
-    instance->txconf.IdType = FDCAN_STANDARD_ID;          // 使用标准id,扩展id则使用FDCAN_EXTENDED_ID(目前没有需求)
+    instance->txconf.IdType = (config->id_type == CAN_ID_EXT) ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID; // 根据配置选择标准或扩展ID
     instance->txconf.TxFrameType = FDCAN_DATA_FRAME;      // 发送数据帧
     instance->txconf.DataLength = FDCAN_DLC_BYTES_8;      // 默认发送长度为8字节
     instance->txconf.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
@@ -101,6 +119,7 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     instance->can_handle = config->can_handle;
     instance->tx_id = config->tx_id; // 好像没用,可以删掉
     instance->rx_id = config->rx_id;
+    instance->id_type = config->id_type; // 保存ID类型
     instance->can_module_callback = config->can_module_callback;
     instance->id = config->id;
 
@@ -171,11 +190,14 @@ static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hcan, uint32_t fifox)
         if (HAL_FDCAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff) != HAL_OK) // 从FIFO中获取数据
             continue;
         
-        uint32_t rx_id = (rxconf.IdType == FDCAN_STANDARD_ID) ? rxconf.Identifier : (rxconf.Identifier & 0x7FF);
+        uint32_t rx_id = rxconf.Identifier;
+        CAN_ID_Type_e rx_id_type = (rxconf.IdType == FDCAN_EXTENDED_ID) ? CAN_ID_EXT : CAN_ID_STD;
         
         for (size_t i = 0; i < idx; ++i)
-        { // 两者相等说明这是要找的实例
-            if (_hcan == can_instance[i]->can_handle && rx_id == can_instance[i]->rx_id)
+        { // 需要同时匹配can_handle、rx_id和id_type
+            if (_hcan == can_instance[i]->can_handle && 
+                rx_id == can_instance[i]->rx_id && 
+                rx_id_type == can_instance[i]->id_type)
             {
                 if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
                 {

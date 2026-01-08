@@ -9,6 +9,13 @@
 #define MX_FDCAN_FILTER_CNT 28     // FDCAN每个实例最多支持28个标准ID过滤器
 #define DEVICE_CAN_CNT 3           // 根据板子设定,H723有FDCAN1,FDCAN2,FDCAN3,因此为3
 
+/* CAN ID类型枚举,用于区分标准ID(11位)和扩展ID(29位) */
+typedef enum
+{
+    CAN_ID_STD = 0,  // 标准ID,11位
+    CAN_ID_EXT = 1   // 扩展ID,29位
+} CAN_ID_Type_e;
+
 /* can instance typedef, every module registered to CAN should have this variable */
 #pragma pack(1)
 typedef struct _
@@ -20,6 +27,7 @@ typedef struct _
     uint8_t rx_buff[8];              // 接收缓存,最大消息长度为8
     uint32_t rx_id;                  // 接收id
     uint8_t rx_len;                  // 接收长度,可能为0-8
+    CAN_ID_Type_e id_type;           // ID类型,标准ID或扩展ID
     // 接收的回调函数,用于解析接收到的数据
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
     void *id;                                // 使用can外设的模块指针(即id指向的模块拥有此can实例,是父子关系)
@@ -32,6 +40,7 @@ typedef struct
     FDCAN_HandleTypeDef *can_handle;              // can句柄
     uint32_t tx_id;                             // 发送id
     uint32_t rx_id;                             // 接收id
+    CAN_ID_Type_e id_type;                      // ID类型,CAN_ID_STD(标准11位)或CAN_ID_EXT(扩展29位)
     void (*can_module_callback)(CANInstance *); // 处理接收数据的回调函数
     void *id;                                   // 拥有can实例的模块地址,用于区分不同的模块(如果有需要的话),如果不需要可以不传入
 } CAN_Init_Config_s;

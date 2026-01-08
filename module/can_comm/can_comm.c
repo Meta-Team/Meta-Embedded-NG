@@ -91,6 +91,7 @@ CANCommInstance *CANCommInit(CANComm_Init_Config_s *comm_config)
     ins->raw_sendbuf[comm_config->send_data_len + CAN_COMM_OFFSET_BYTES - 1] = CAN_COMM_TAIL;
     // can instance的设置
     comm_config->can_config.id = ins; // CANComm的实例指针作为CANInstance的id,回调函数中会用到
+    comm_config->can_config.id_type = CAN_ID_STD;
     comm_config->can_config.can_module_callback = CANCommRxCallback;
     ins->can_ins = CANRegister(&comm_config->can_config);
 

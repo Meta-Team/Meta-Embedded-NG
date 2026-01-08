@@ -80,6 +80,7 @@ DMMotorInstance *DMMotorInit(Motor_Init_Config_s *config)
 
     config->can_init_config.can_module_callback = DMMotorDecode;
     config->can_init_config.id = motor;
+    config->can_init_config.id_type = CAN_ID_STD;
     motor->motor_can_instace = CANRegister(&config->can_init_config);
 
     // Daemon_Init_Config_s conf = {
