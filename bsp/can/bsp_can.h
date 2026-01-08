@@ -7,7 +7,7 @@
 // 最多能够支持的CAN设备数
 #define CAN_MX_REGISTER_CNT 16     // 这个数量取决于CAN总线的负载
 #define MX_FDCAN_FILTER_CNT 28     // FDCAN每个实例最多支持28个标准ID过滤器
-#define DEVICE_CAN_CNT 2           // 根据板子设定,H723有FDCAN1,FDCAN2,因此为2
+#define DEVICE_CAN_CNT 3           // 根据板子设定,H723有FDCAN1,FDCAN2,FDCAN3,因此为3
 
 /* can instance typedef, every module registered to CAN should have this variable */
 #pragma pack(1)

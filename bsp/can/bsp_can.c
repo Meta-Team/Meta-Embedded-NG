@@ -28,10 +28,16 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
 static void CANAddFilter(CANInstance *_instance)
 {
     FDCAN_FilterTypeDef fdcan_filter_conf;
-    static uint8_t fdcan1_filter_idx = 0, fdcan2_filter_idx = 0; // 每个FDCAN实例有独立的过滤器索引
+    static uint8_t fdcan1_filter_idx = 0, fdcan2_filter_idx = 0, fdcan3_filter_idx = 0; // 每个FDCAN实例有独立的过滤器索引
 
     fdcan_filter_conf.IdType = FDCAN_STANDARD_ID;              // 使用标准ID
-    fdcan_filter_conf.FilterIndex = _instance->can_handle == &hfdcan1 ? (fdcan1_filter_idx++) : (fdcan2_filter_idx++); // 根据can_handle判断是FDCAN1还是FDCAN2,然后自增
+    // 根据can_handle判断是FDCAN1、FDCAN2还是FDCAN3,然后自增
+    if (_instance->can_handle == &hfdcan1)
+        fdcan_filter_conf.FilterIndex = fdcan1_filter_idx++;
+    else if (_instance->can_handle == &hfdcan2)
+        fdcan_filter_conf.FilterIndex = fdcan2_filter_idx++;
+    else
+        fdcan_filter_conf.FilterIndex = fdcan3_filter_idx++;
     fdcan_filter_conf.FilterType = FDCAN_FILTER_MASK;          // 使用掩码模式
     fdcan_filter_conf.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;  // 消息路由到RxFifo0
     fdcan_filter_conf.FilterID1 = _instance->rx_id;            // 过滤ID
@@ -52,6 +58,8 @@ static void CANServiceInit()
     HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     HAL_FDCAN_Start(&hfdcan2);
     HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+    HAL_FDCAN_Start(&hfdcan3);
+    HAL_FDCAN_ActivateNotification(&hfdcan3, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 }
 
 /* ----------------------- two extern callable function -----------------------*/

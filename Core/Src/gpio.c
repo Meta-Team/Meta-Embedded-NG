@@ -44,7 +44,6 @@
      PB2   ------> OCTOSPIM_P1_CLK
      PE11   ------> OCTOSPIM_P1_NCS
      PD11   ------> OCTOSPIM_P1_IO0
-     PD13   ------> FDCAN3_TX
      PA8   ------> RCC_MCO_1
 */
 void MX_GPIO_Init(void)
@@ -170,14 +169,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF9_OCTOSPIM_P1;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PD13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF5_FDCAN3;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA8 */
