@@ -28,7 +28,6 @@ SuperCapInstance *SuperCapInit(SuperCap_Init_Config_s *supercap_config)
     memset(super_cap_instance, 0, sizeof(SuperCapInstance));
     
     supercap_config->can_config.can_module_callback = SuperCapRxCallback;
-    supercap_config->can_config.id_type = CAN_ID_STD;
     super_cap_instance->can_ins = CANRegister(&supercap_config->can_config);
     return super_cap_instance;
 }
