@@ -37,7 +37,9 @@ typedef struct _
     uint32_t tx_id;                  // 发送id
     uint8_t tx_buff[8];              // 发送缓存,发送消息长度可以通过CANSetDLC()设定,最大为8
     uint8_t rx_buff[8];              // 接收缓存,最大消息长度为8
-    uint32_t rx_id;                  // 接收id
+    uint32_t rx_id;                  // 接收id(用于匹配)
+    uint32_t rx_id_mask;             // 接收id掩码,用于灵活匹配(如CyberGear等协议)
+    uint32_t last_rx_identifier;     // 最后接收到的完整ID,用于解析扩展协议信息
     uint8_t rx_len;                  // 接收长度,可能为0-8
     CAN_ID_Type_e id_type;           // ID类型,标准ID或扩展ID
     // 接收的回调函数,用于解析接收到的数据
@@ -51,6 +53,7 @@ typedef struct
     FDCAN_HandleTypeDef* can_handle;              // can句柄
     uint32_t tx_id;                               // 发送id
     uint32_t rx_id;                               // 接收id
+    uint32_t rx_id_mask;                          // 接收id掩码,0表示使用默认精确匹配
     CAN_ID_Type_e id_type;                        // ID类型,CAN_ID_STD(标准11位)或CAN_ID_EXT(扩展29位)
     void (*can_module_callback)(CANInstance*);    // 处理接收数据的回调函数
     void* id;                                     // 拥有can实例的模块地址
@@ -65,9 +68,18 @@ typedef void (*can_callback)(CANInstance*);
 
 - `CAN_ID_Type_e`是CAN ID类型枚举，用于区分标准ID（11位，范围0x000-0x7FF）和扩展ID（29位，范围0x00000000-0x1FFFFFFF）。
 
-- `CANInstance`是一个CAN实例。注意，CAN作为一个总线设备，一条总线上可以挂载多个设备，因此多个设备可以共享同一个CAN硬件。其成员变量包括发送id，发送buff以及接收buff，还有接收id、ID类型和接收协议解析回调函数。**由于目前使用的设备每个数据帧的长度都是8，因此收发buff长度暂时固定为8**。定义该结构体的时候使用了一个技巧，使得在结构体内部可以用结构体自身的指针作为成员，即`can_module_callback`的定义。
+- `CANInstance`是一个CAN实例。注意，CAN作为一个总线设备，一条总线上可以挂载多个设备，因此多个设备可以共享同一个CAN硬件。其成员变量包括发送id，发送buff以及接收buff，还有接收id、ID类型、接收ID掩码和接收协议解析回调函数。**由于目前使用的设备每个数据帧的长度都是8，因此收发buff长度暂时固定为8**。`rx_id_mask`用于灵活匹配接收ID，`last_rx_identifier`保存最后接收到的完整ID，用于解析CyberGear等需要从扩展ID中提取信息的协议。定义该结构体的时候使用了一个技巧，使得在结构体内部可以用结构体自身的指针作为成员，即`can_module_callback`的定义。
 
-- `CAN_Init_Config_s`是用于初始化CAN实例的结构，在调用CAN实例的初始化函数时传入（下面介绍函数时详细介绍）。**注意：需要通过`id_type`字段指定使用标准ID还是扩展ID**。
+- `CAN_Init_Config_s`是用于初始化CAN实例的结构，在调用CAN实例的初始化函数时传入（下面介绍函数时详细介绍）。
+
+### 默认行为说明
+
+| 字段 | 默认值 | 默认行为 |
+|------|--------|----------|
+| `id_type` | `CAN_ID_STD` (0) | 使用标准11位ID |
+| `rx_id_mask` | `0` | **精确匹配**：标准ID自动设为`0x7FF`，扩展ID自动设为`0x1FFFFFFF` |
+
+> **注意**：对于DJI电机、DM电机等使用固定接收ID的设备，无需配置`rx_id_mask`，保持默认即可（完全兼容原有代码）。对于CyberGear等使用动态ID的协议，需要配置合适的掩码以匹配多种通信类型的回复。
 
 - `can_module_callback()`是模块提供给CAN接收中断回调函数使用的协议解析函数指针。对于每个需要CAN的模块，需要定义一个这样的函数用于解包数据。
 - 每个使用CAN外设的module，都需要在其内部定义一个`can_instance*`。
@@ -76,30 +88,48 @@ typedef void (*can_callback)(CANInstance*);
 ## 外部接口
 
 ```c
-void CANRegister(can_instance* instance, can_instance_config config);
-void CANSetDLC(CANInstance *_instance, uint8_t length); // 设置发送帧的数据长度
-uint8_t CANTransmit(can_instance* _instance, uint8_t timeout);
+CANInstance* CANRegister(CAN_Init_Config_s* config);     // 注册CAN实例
+void CANSetDLC(CANInstance *_instance, uint8_t length);  // 设置发送帧的数据长度
+void CANSetTxId(CANInstance *_instance, uint32_t tx_id); // 动态设置发送ID
+uint8_t CANTransmit(CANInstance* _instance, float timeout); // 发送CAN消息
 ```
 
-`CANRegister`是用于初始化CAN实例的接口，module层的模块对象（也应当为一个结构体）内要包含一个`CANInstance`。调用时传入实例指针，以及用于初始化的config。`CANRegister`应当在module的初始化函数内被调用，推荐config采用以下的方式定义，更加直观明了：
+`CANRegister`是用于初始化CAN实例的接口，module层的模块对象（也应当为一个结构体）内要包含一个`CANInstance*`指针。调用时传入配置结构体指针，返回创建的CAN实例。`CANRegister`应当在module的初始化函数内被调用，推荐config采用以下的方式定义，更加直观明了：
+
+`CANSetTxId`用于动态修改发送ID，适用于CyberGear等需要根据通信类型动态构建发送ID的协议。
 
 ```c
-// 使用标准ID(11位)的示例
+// 示例1: 标准ID精确匹配(默认行为,适用于DJI/DM电机)
 CAN_Init_Config_s config_std = {
     .can_handle = &hfdcan1,
     .tx_id = 0x005,
     .rx_id = 0x200,
-    .id_type = CAN_ID_STD,              // 标准ID,11位
+    // .id_type = CAN_ID_STD,           // 可省略,默认为标准ID
+    // .rx_id_mask = 0,                 // 可省略,默认精确匹配(0x7FF)
     .can_module_callback = MotorCallback
 };
 
-// 使用扩展ID(29位)的示例
+// 示例2: 扩展ID精确匹配
 CAN_Init_Config_s config_ext = {
     .can_handle = &hfdcan1,
     .tx_id = 0x18FF0001,
     .rx_id = 0x18FF0002,
     .id_type = CAN_ID_EXT,              // 扩展ID,29位
+    // .rx_id_mask = 0,                 // 可省略,默认精确匹配(0x1FFFFFFF)
     .can_module_callback = DeviceCallback
+};
+
+// 示例3: 扩展ID掩码匹配(适用于CyberGear等动态ID协议)
+// CyberGear协议: ID[28:24]=通信类型, ID[23:16]=电机ID, ID[15:8]=主机ID
+// 只匹配主机ID字段(bit15-8),忽略通信类型和电机ID
+#define CYBERGEAR_HOST_ID  0xFD
+CAN_Init_Config_s config_cybergear = {
+    .can_handle = &hfdcan1,
+    .tx_id = 0x00000000,                // 发送ID将通过CANSetTxId()动态设置
+    .rx_id = (CYBERGEAR_HOST_ID << 8),  // 匹配主机ID字段
+    .rx_id_mask = 0x0000FF00,           // 只匹配bit15-8(主机ID)
+    .id_type = CAN_ID_EXT,
+    .can_module_callback = CyberGearCallback
 };
 ```
 

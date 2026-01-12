@@ -43,7 +43,7 @@ static void CANAddFilter(CANInstance *_instance)
         else
             fdcan_filter_conf.FilterIndex = fdcan3_ext_filter_idx++;
         fdcan_filter_conf.FilterID1 = _instance->rx_id;        // 过滤ID
-        fdcan_filter_conf.FilterID2 = 0x1FFFFFFF;              // 掩码,0x1FFFFFFF表示精确匹配29位扩展ID
+        fdcan_filter_conf.FilterID2 = _instance->rx_id_mask;   // 使用用户配置的掩码
     }
     else
     {
@@ -56,7 +56,7 @@ static void CANAddFilter(CANInstance *_instance)
         else
             fdcan_filter_conf.FilterIndex = fdcan3_std_filter_idx++;
         fdcan_filter_conf.FilterID1 = _instance->rx_id;        // 过滤ID
-        fdcan_filter_conf.FilterID2 = 0x7FF;                   // 掩码,0x7FF表示精确匹配11位标准ID
+        fdcan_filter_conf.FilterID2 = _instance->rx_id_mask;   // 使用用户配置的掩码
     }
     fdcan_filter_conf.FilterType = FDCAN_FILTER_MASK;          // 使用掩码模式
     fdcan_filter_conf.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;  // 消息路由到RxFifo0
@@ -120,6 +120,12 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     instance->tx_id = config->tx_id; // 好像没用,可以删掉
     instance->rx_id = config->rx_id;
     instance->id_type = config->id_type; // 保存ID类型
+    // 设置rx_id_mask,如果用户未配置(0),则使用默认精确匹配
+    if (config->rx_id_mask == 0)
+        instance->rx_id_mask = (config->id_type == CAN_ID_EXT) ? 0x1FFFFFFF : 0x7FF;
+    else
+        instance->rx_id_mask = config->rx_id_mask;
+    instance->last_rx_identifier = 0;
     instance->can_module_callback = config->can_module_callback;
     instance->id = config->id;
 
@@ -172,6 +178,12 @@ void CANSetDLC(CANInstance *_instance, uint8_t length)
     _instance->txconf.DataLength = dlc_codes[length];
 }
 
+void CANSetTxId(CANInstance *_instance, uint32_t tx_id)
+{
+    _instance->tx_id = tx_id;
+    _instance->txconf.Identifier = tx_id;
+}
+
 /* -----------------------belows are callback definitions--------------------------*/
 
 /**
@@ -194,16 +206,17 @@ static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hcan, uint32_t fifox)
         CAN_ID_Type_e rx_id_type = (rxconf.IdType == FDCAN_EXTENDED_ID) ? CAN_ID_EXT : CAN_ID_STD;
         
         for (size_t i = 0; i < idx; ++i)
-        { // 需要同时匹配can_handle、rx_id和id_type
+        { // 需要同时匹配can_handle、id_type,并使用掩码匹配rx_id
             if (_hcan == can_instance[i]->can_handle && 
-                rx_id == can_instance[i]->rx_id && 
-                rx_id_type == can_instance[i]->id_type)
+                rx_id_type == can_instance[i]->id_type &&
+                (rx_id & can_instance[i]->rx_id_mask) == (can_instance[i]->rx_id & can_instance[i]->rx_id_mask))
             {
                 if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
                 {
                     // FDCAN的DataLength是DLC代码,根据文档实际就是长度
                     can_instance[i]->rx_len = rxconf.DataLength; // 提取实际字节数
                     if (can_instance[i]->rx_len > 8) can_instance[i]->rx_len = 8;  // 安全检查
+                    can_instance[i]->last_rx_identifier = rx_id; // 保存完整的接收ID,用于解析扩展协议
                     memcpy(can_instance[i]->rx_buff, can_rx_buff, can_instance[i]->rx_len); // 消息拷贝到对应实例
                     can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
                 }
