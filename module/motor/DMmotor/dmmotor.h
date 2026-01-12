@@ -57,7 +57,11 @@ typedef struct
     float *other_speed_feedback_ptr;
     float *speed_feedforward_ptr;
     float *current_feedforward_ptr;
-    float pid_ref;
+    
+    float position_ref;                     // 位置参考值 (rad)
+    float velocity_ref;                     // 速度参考值 (rad/s)
+    float torque_ref;                       // 力矩参考值 (Nm)
+    
     Motor_Working_Type_e stop_flag;
     CANInstance *motor_can_instace;
     // DaemonInstance* motor_daemon;
@@ -74,7 +78,15 @@ typedef enum
 
 DMMotorInstance *DMMotorInit(Motor_Init_Config_s *config);
 
-void DMMotorSetRef(DMMotorInstance *motor, float ref);
+/**
+ * @brief 设置电机运控模式参考值 (同时设置位置、速度、力矩)
+ * @param motor 电机实例指针
+ * @param position 目标位置 (rad), 范围: -12.5 ~ 12.5
+ * @param velocity 目标速度 (rad/s), 范围: -45 ~ 45
+ * @param torque 前馈力矩 (Nm), 范围: -18 ~ 18
+ * @note  MIT模式公式: τ = Kp*(pos_ref - pos) + Kd*(vel_ref - vel) + torque_ref
+ */
+void DMMotorSetRef(DMMotorInstance *motor, float position, float velocity, float torque);
 
 void DMMotorOuterLoop(DMMotorInstance *motor,Closeloop_Type_e closeloop_type);
 

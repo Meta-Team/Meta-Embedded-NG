@@ -98,9 +98,11 @@ DMMotorInstance *DMMotorInit(Motor_Init_Config_s *config)
     return motor;
 }
 
-void DMMotorSetRef(DMMotorInstance *motor, float ref)
+void DMMotorSetRef(DMMotorInstance *motor, float position, float velocity, float torque)
 {
-    motor->pid_ref = ref;
+    motor->position_ref = position;
+    motor->velocity_ref = velocity;
+    motor->torque_ref = torque;
 }
 
 void DMMotorEnable(DMMotorInstance *motor)
@@ -119,36 +121,54 @@ void DMMotorOuterLoop(DMMotorInstance *motor, Closeloop_Type_e type)
 }
 
 
-//@Todo: 目前只实现了MIT模式下速度PID
+/**
+ * @brief 电机控制任务 (每个电机实例一个任务)
+ * @param argument 电机实例指针
+ * @note  MIT模式下同时控制位置、速度、力矩
+ */
 void DMMotorTask(void const *argument)
 {
-    float  pid_ref, set;
+    float pos_set, vel_set, torque_set;
     DMMotorInstance *motor = (DMMotorInstance *)argument;
-    // DM_Motor_Measure_s *measure = &motor->measure;
     Motor_Control_Setting_s *setting = &motor->motor_settings;
-    // CANInstance *motor_can = motor->motor_can_instace;
-    // uint16_t tmp;
     DMMotor_Send_s motor_send_mailbox;
+    
     while (1)
     {
-        pid_ref = motor->pid_ref;
+        // 获取参考值
+        pos_set = motor->position_ref;
+        vel_set = motor->velocity_ref;
+        torque_set = motor->torque_ref;
         
-        set = pid_ref;
+        // 方向处理
         if (setting->motor_reverse_flag == MOTOR_DIRECTION_REVERSE)
-            set *= -1;
+        {
+            pos_set *= -1;
+            vel_set *= -1;
+            torque_set *= -1;
+        }
         
-        // 目前只实现了MIT模式下速度PID
-        LIMIT_MIN_MAX(set, DM_V_MIN, DM_V_MAX);
-        motor_send_mailbox.position_des = float_to_uint(0, DM_P_MIN, DM_P_MAX, 16);
-        motor_send_mailbox.velocity_des = float_to_uint(set, DM_V_MIN, DM_V_MAX, 12);
-        motor_send_mailbox.torque_des = float_to_uint(0, DM_T_MIN, DM_T_MAX, 12);
-        // motor_send_mailbox.Kp = 0;
-        // motor_send_mailbox.Kd = 0;
+        // 限幅
+        LIMIT_MIN_MAX(pos_set, DM_P_MIN, DM_P_MAX);
+        LIMIT_MIN_MAX(vel_set, DM_V_MIN, DM_V_MAX);
+        LIMIT_MIN_MAX(torque_set, DM_T_MIN, DM_T_MAX);
+        
+        // 填充发送数据
+        motor_send_mailbox.position_des = float_to_uint(pos_set, DM_P_MIN, DM_P_MAX, 16);
+        motor_send_mailbox.velocity_des = float_to_uint(vel_set, DM_V_MIN, DM_V_MAX, 12);
+        motor_send_mailbox.torque_des = float_to_uint(torque_set, DM_T_MIN, DM_T_MAX, 12);
         motor_send_mailbox.Kp = float_to_uint(motor->Kp, DM_KP_MIN, DM_KP_MAX, 12);
         motor_send_mailbox.Kd = float_to_uint(motor->Kd, DM_KD_MIN, DM_KD_MAX, 12);
-
+        
+        // 如果电机停止,所有输出清零
         if(motor->stop_flag == MOTOR_STOP)
+        {
+            motor_send_mailbox.position_des = float_to_uint(0, DM_P_MIN, DM_P_MAX, 16);
+            motor_send_mailbox.velocity_des = float_to_uint(0, DM_V_MIN, DM_V_MAX, 12);
             motor_send_mailbox.torque_des = float_to_uint(0, DM_T_MIN, DM_T_MAX, 12);
+            motor_send_mailbox.Kp = 0;
+            motor_send_mailbox.Kd = 0;
+        }
 
         motor->motor_can_instace->tx_buff[0] = (uint8_t)(motor_send_mailbox.position_des >> 8);
         motor->motor_can_instace->tx_buff[1] = (uint8_t)(motor_send_mailbox.position_des);
