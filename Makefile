@@ -101,7 +101,9 @@ Core/Src/sysmem.c \
 Core/Src/syscalls.c \
 application/chassis/agv_chassis.c \
 application/cmd/dt7_cmd.c \
+application/gimbal/2yaw_gimbal.c \
 application/sentry/sentry.c \
+application/shoot/ammo_booster.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \
 bsp/dwt/bsp_dwt.c \
@@ -119,6 +121,7 @@ module/algorithm/user_lib.c \
 module/message_center/message_center.c \
 module/motor/DJImotor/dji_motor.c \
 module/motor/DMmotor/dmmotor.c \
+module/motor/XMmotor/xm_motor.c \
 module/motor/motor_task.c \
 module/motor/power_control.c \
 module/remote/remote_control.c
@@ -217,7 +220,9 @@ C_INCLUDES =  \
 -Iapplication \
 -Iapplication/chassis \
 -Iapplication/cmd \
+-Iapplication/gimbal \
 -Iapplication/sentry \
+-Iapplication/shoot \
 -Ibsp \
 -Ibsp/can \
 -Ibsp/dwt \
@@ -232,6 +237,7 @@ C_INCLUDES =  \
 -Imodule/motor \
 -Imodule/motor/DJImotor \
 -Imodule/motor/DMmotor \
+-Imodule/motor/XMmotor \
 -Imodule/remote
 
 
