@@ -1,9 +1,9 @@
 #include "bmi088_regNdef.h"
 #include "bmi088.h"
 #include "user_lib.h"
-#include "daemon.h"
+// #include "daemon.h"
 
-static DaemonInstance *bmi088_daemon_instance;
+// static DaemonInstance *bmi088_daemon_instance;
 
 // ---------------------------以下私有函数,用于读写BMI088寄存器封装,blocking--------------------------------//
 /**
