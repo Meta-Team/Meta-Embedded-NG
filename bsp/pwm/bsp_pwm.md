@@ -10,8 +10,8 @@
 PWM_Init_Config_s pwm_config;
 pwm_config.htim = &htim12;
 pwm_config.channel = TIM_CHANNEL_2;
-pwm_config.period = 0.001f;
-pwm_config.dutyratio = 0.5f;
+pwm_config.period = 0.001;
+pwm_config.dutyratio = 0.5;
 PWMInstance *pwm = PWMRegister(&pwm_config);
 PWMStart(pwm);
 ```
