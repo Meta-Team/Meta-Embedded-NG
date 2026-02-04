@@ -5,7 +5,7 @@
 // 配合中断以及初始化
 static uint8_t idx;
 static PWMInstance *pwm_instance[PWM_DEVICE_CNT] = {NULL}; // 所有的pwm instance保存于此,用于callback时判断中断来源
-static uint32_t PWMSelectTclk(TIM_HandleTypeDef *htim );
+// static uint32_t PWMSelectTclk(TIM_HandleTypeDef *htim );
 /**
  * @brief pwm dma传输完成回调函数
  *
@@ -38,7 +38,15 @@ PWMInstance *PWMRegister(PWM_Init_Config_s *config)
     pwm->dutyratio = config->dutyratio;
     pwm->callback = config->callback;
     pwm->id = config->id;
-    pwm->tclk = PWMSelectTclk(pwm->htim);
+    //pwm->tclk = PWMSelectTclk(pwm->htim);
+    if (pwm->htim == &htim1)
+    {
+        pwm->tclk = HAL_RCC_GetPCLK2Freq();
+    }
+    else
+    {
+        pwm->tclk = HAL_RCC_GetPCLK1Freq();
+    }
     // 启动PWM
     HAL_TIM_PWM_Start(pwm->htim, pwm->channel);
     PWMSetPeriod(pwm, pwm->period);
@@ -88,22 +96,22 @@ void PWMStartDMA(PWMInstance *pwm, uint32_t *pData, uint32_t Size)
 
 // 设置pwm对应定时器时钟源频率
 //tim2~7,12~14:APB1  tim1,8~11:APB2
-static uint32_t PWMSelectTclk(TIM_HandleTypeDef *htim )
-{
-    uintptr_t tclk_temp  = ((uintptr_t)((htim)->Instance));
-    if (
-            (tclk_temp <= (APB1PERIPH_BASE + 0x2000UL)) &&
-            (tclk_temp >= (APB1PERIPH_BASE + 0x0000UL)))
-    {
-        return (HAL_RCC_GetPCLK1Freq() * (APBPrescTable[(RCC->CFGR & RCC_CFGR_PPRE1)>> RCC_CFGR_PPRE1_Pos] == 0 ? 1 : 2));
-    }
-    else if (
-            ((tclk_temp <= (APB2PERIPH_BASE + 0x0400UL)) &&
-             (tclk_temp >= (APB2PERIPH_BASE + 0x0000UL))) ||
-            ((tclk_temp <= (APB2PERIPH_BASE + 0x4800UL)) &&
-             (tclk_temp >= (APB2PERIPH_BASE + 0x4000UL))))
-    {
-        return (HAL_RCC_GetPCLK2Freq() * (APBPrescTable[(RCC->CFGR & RCC_CFGR_PPRE1)>> RCC_CFGR_PPRE1_Pos] == 0 ? 1 : 2));
-    }
-    return 0;
-}
+// static uint32_t PWMSelectTclk(TIM_HandleTypeDef *htim )
+// {
+//     uintptr_t tclk_temp  = ((uintptr_t)((htim)->Instance));
+//     if (
+//             (tclk_temp <= (APB1PERIPH_BASE + 0x2000UL)) &&
+//             (tclk_temp >= (APB1PERIPH_BASE + 0x0000UL)))
+//     {
+//         return (HAL_RCC_GetPCLK1Freq() * (APBPrescTable[(RCC->CFGR & RCC_CFGR_PPRE1)>> RCC_CFGR_PPRE1_Pos] == 0 ? 1 : 2));
+//     }
+//     else if (
+//             ((tclk_temp <= (APB2PERIPH_BASE + 0x0400UL)) &&
+//              (tclk_temp >= (APB2PERIPH_BASE + 0x0000UL))) ||
+//             ((tclk_temp <= (APB2PERIPH_BASE + 0x4800UL)) &&
+//              (tclk_temp >= (APB2PERIPH_BASE + 0x4000UL))))
+//     {
+//         return (HAL_RCC_GetPCLK2Freq() * (APBPrescTable[(RCC->CFGR & RCC_CFGR_PPRE1)>> RCC_CFGR_PPRE1_Pos] == 0 ? 1 : 2));
+//     }
+//     return 0;
+// }

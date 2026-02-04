@@ -14,8 +14,8 @@
 
 #include "tim.h"
 #include "stdint.h"
-#include "stm32f4xx_hal_rcc.h"
-#include "stm32f407xx.h"
+#include "stm32h7xx_hal_rcc.h"
+#include "stm32h723xx.h"
 #define PWM_DEVICE_CNT 16 // 最大支持的PWM实例数量
 
 /* pwm实例结构体 */
