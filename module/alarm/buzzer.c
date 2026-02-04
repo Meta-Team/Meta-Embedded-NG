@@ -14,8 +14,8 @@ static BuzzzerInstance *buzzer_list[BUZZER_DEVICE_CNT] = {0};
 void BuzzerInit()
 {
     PWM_Init_Config_s buzzer_config = {
-        .htim = &htim4,
-        .channel = TIM_CHANNEL_3,
+        .htim = &htim12,
+        .channel = TIM_CHANNEL_2,
         .dutyratio = 0,
         .period = 0.001,
     };
