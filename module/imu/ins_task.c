@@ -14,15 +14,14 @@
 #include "ins_task.h"
 #include "controller.h"
 #include "QuaternionEKF.h"
-#include "spi.h"
-#include "tim.h"
 #include "user_lib.h"
 #include "general_def.h"
-#include "master_process.h"
+// #include "master_process.h"
 
 static INS_t INS;
 static IMU_Param_t IMU_Param;
-static PIDInstance TempCtrl = {0};
+static BMI088Instance *bmi088;
+static BMI088_Data_t bmi088_data;
 
 const float xb[3] = {1, 0, 0};
 const float yb[3] = {0, 1, 0};
@@ -35,21 +34,6 @@ static float RefTemp = 40; // 恒温设定温度
 
 static void IMU_Param_Correction(IMU_Param_t *param, float gyro[3], float accel[3]);
 
-static void IMUPWMSet(uint16_t pwm)
-{
-    __HAL_TIM_SetCompare(&htim10, TIM_CHANNEL_1, pwm);
-}
-
-/**
- * @brief 温度控制
- *
- */
-static void IMU_Temperature_Ctrl(void)
-{
-    PIDCalculate(&TempCtrl, BMI088.Temperature, RefTemp);
-    IMUPWMSet(float_constrain(float_rounding(TempCtrl.Output), 0, UINT32_MAX));
-}
-
 // 使用加速度计的数据初始化Roll和Pitch,而Yaw置0,这样可以避免在初始时候的姿态估计误差
 static void InitQuaternion(float *init_q4)
 {
@@ -59,10 +43,11 @@ static void InitQuaternion(float *init_q4)
     // 读取100次加速度计数据,取平均值作为初始值
     for (uint8_t i = 0; i < 100; ++i)
     {
-        BMI088_Read(&BMI088);
-        acc_init[X] += BMI088.Accel[X];
-        acc_init[Y] += BMI088.Accel[Y];
-        acc_init[Z] += BMI088.Accel[Z];
+        BMI088Acquire(bmi088, &bmi088_data);
+        
+        acc_init[X] += bmi088_data.acc[X];
+        acc_init[Y] += bmi088_data.acc[Y];
+        acc_init[Z] += bmi088_data.acc[Z];
         DWT_Delay(0.001);
     }
     for (uint8_t i = 0; i < 3; ++i)
@@ -84,10 +69,44 @@ attitude_t *INS_Init(void)
     else
         return (attitude_t *)&INS.Gyro;
 
-    HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
+    BMI088_Init_Config_s imu_config = {
+        .spi_acc_config={
+            .GPIOx=GPIOC,
+            .cs_pin=GPIO_PIN_0,
+            .spi_handle=&hspi2,
+        },
+        .spi_gyro_config={
+            .GPIOx=GPIOC,
+            .cs_pin=GPIO_PIN_3,
+            .spi_handle=&hspi2,
+        },
+        .acc_int_config={
+            .exti_mode=EXTI_TRIGGER_FALLING,
+            .GPIO_Pin=GPIO_PIN_10,
+            .GPIOx=GPIOE,
+        },
+        .gyro_int_config={
+            .exti_mode=EXTI_TRIGGER_FALLING,
+            .GPIO_Pin=GPIO_PIN_12,
+            .GPIOx=GPIOE,
+        },
+        .heat_pid_config={
+            .Kp=0.0f,
+            .Kd=0.0f,
+            .Ki=0.0f,
+            .MaxOut=0.0f,
+            .DeadBand=0.0f,
+        },
+        .heat_pwm_config={
+            .channel=TIM_CHANNEL_4,
+            .htim=&htim3,
+        },
+        .cali_mode=BMI088_CALIBRATE_ONLINE_MODE,
+        .work_mode=BMI088_BLOCK_PERIODIC_MODE,
+    };
 
-    while (BMI088Init(&hspi1, 1) != BMI088_NO_ERROR)
-        ;
+    bmi088 = BMI088Register(&imu_config);
+
     IMU_Param.scale[X] = 1;
     IMU_Param.scale[Y] = 1;
     IMU_Param.scale[Z] = 1;
@@ -99,15 +118,7 @@ attitude_t *INS_Init(void)
     float init_quaternion[4] = {0};
     InitQuaternion(init_quaternion);
     IMU_QuaternionEKF_Init(init_quaternion, 10, 0.001, 1000000, 1, 0);
-    // imu heat init
-    PID_Init_Config_s config = {.MaxOut = 2000,
-                                .IntegralLimit = 300,
-                                .DeadBand = 0,
-                                .Kp = 1000,
-                                .Ki = 20,
-                                .Kd = 0,
-                                .Improve = 0x01}; // enable integratiaon limit
-    PIDInit(&TempCtrl, &config);
+    // no need for imu heat init because it's done in BMI088Init()
 
     // noise of accel is relatively big and of high freq,thus lpf is used
     INS.AccelLPF = 0.0085;
@@ -127,14 +138,14 @@ void INS_Task(void)
     // ins update
     if ((count % 1) == 0)
     {
-        BMI088_Read(&BMI088);
+        BMI088Acquire(bmi088, &bmi088_data);
 
-        INS.Accel[X] = BMI088.Accel[X];
-        INS.Accel[Y] = BMI088.Accel[Y];
-        INS.Accel[Z] = BMI088.Accel[Z];
-        INS.Gyro[X] = BMI088.Gyro[X];
-        INS.Gyro[Y] = BMI088.Gyro[Y];
-        INS.Gyro[Z] = BMI088.Gyro[Z];
+        INS.Accel[X] = bmi088_data.acc[X];
+        INS.Accel[Y] = bmi088_data.acc[Y];
+        INS.Accel[Z] = bmi088_data.acc[Z];
+        INS.Gyro[X] = bmi088_data.gyro[X];
+        INS.Gyro[Y] = bmi088_data.gyro[Y];
+        INS.Gyro[Z] = bmi088_data.gyro[Z];
 
         // demo function,用于修正安装误差,可以不管,本demo暂时没用
         IMU_Param_Correction(&IMU_Param, INS.Gyro, INS.Accel);
@@ -167,14 +178,14 @@ void INS_Task(void)
         INS.Roll = QEKF_INS.Roll;
         INS.YawTotalAngle = QEKF_INS.YawTotalAngle;
 
-        VisionSetAltitude(INS.Yaw, INS.Pitch, INS.Roll);
+        // VisionSetAltitude(INS.Yaw, INS.Pitch, INS.Roll);
     }
 
     // temperature control
     if ((count % 2) == 0)
     {
         // 500hz
-        IMU_Temperature_Ctrl();
+        // IMU_Temperature_Ctrl();
     }
 
     if ((count++ % 1000) == 0)

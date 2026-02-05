@@ -120,6 +120,7 @@ module/algorithm/crc8.c \
 module/algorithm/crc16.c \
 module/algorithm/user_lib.c \
 module/BMI088/bmi088.c \
+module/imu/ins_task.c \
 module/message_center/message_center.c \
 module/motor/DJImotor/dji_motor.c \
 module/motor/DMmotor/dmmotor.c \
@@ -237,6 +238,7 @@ C_INCLUDES =  \
 -Imodule \
 -Imodule/algorithm \
 -Imodule/BMI088 \
+-Imodule/imu \
 -Imodule/message_center \
 -Imodule/motor \
 -Imodule/motor/DJImotor \
