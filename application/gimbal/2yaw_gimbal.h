@@ -1,5 +1,5 @@
-#ifndef 2YAW_GIMBAL_H
-#define 2YAW_GIMBAL_H
+#ifndef _2YAW_GIMBAL_H
+#define _2YAW_GIMBAL_H
 
 /**
  * @brief 初始化云台,会被RobotInit()调用
@@ -13,4 +13,4 @@ void GimbalInit();
  */
 void GimbalTask();
 
-#endif // 2YAW_GIMBAL_H
+#endif // _2YAW_GIMBAL_H
