@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "main.h"
 
-#define DEVICE_USART_CNT 3     // C板至多分配3个串口
+#define DEVICE_USART_CNT 6     // MC02板至多分配6个串口
 #define USART_RXBUFF_LIMIT 256 // 如果协议需要更大的buff,请修改这里
 
 // 模块回调函数,用于解析协议

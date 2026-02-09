@@ -12,19 +12,16 @@
  *                .rx_id = 1,  // 电机ID (1~127)
  *            },
  *            .controller_param_init_config = {
- *                .angle_PID = { .Kp = 30.0f },  // MIT模式位置Kp
- *                .speed_PID = { .Kd = 1.0f },   // MIT模式阻尼Kd
+ *                .angle_PID = { .Kp = 4.0f },  // MIT模式位置Kp
+ *                .speed_PID = { .Kd = 0.2f },   // MIT模式阻尼Kd
  *            },
  *            .controller_setting_init_config = {
  *                .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
  *            },
  *        };
  *        
- *        // 2. 初始化电机
+ *        // 2. 初始化电机 (注意小米电机上电1s之后再发指令)
  *        XMMotorInstance *xm_motor = XMMotorInit(&xm_config);
- * 
- *        // 3. 使能电机
- *        XMMotorEnable(xm_motor);
  *        
  *        // 3. 初始化电机控制任务 (在所有电机初始化完成后调用)
  *        XMMotorControlInit();

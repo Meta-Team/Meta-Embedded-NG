@@ -380,13 +380,14 @@ static void XMMotorTask(void const *argument)
 
 void XMMotorControlInit(void)
 {
-    char xm_task_name[8] = "xm";
+    char xm_task_name[8];
     
     if (!idx)
         return;
     
     for (size_t i = 0; i < idx; i++)
     {
+        strcpy(xm_task_name, "xm");  // 每次循环重置任务名
         char xm_id_buff[2] = {0};
         __itoa(i, xm_id_buff, 10);
         strcat(xm_task_name, xm_id_buff);

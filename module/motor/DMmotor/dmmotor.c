@@ -186,12 +186,13 @@ void DMMotorTask(void const *argument)
 }
 void DMMotorControlInit()
 {
-    char dm_task_name[5] = "dm";
+    char dm_task_name[5];
     // 遍历所有电机实例,创建任务
     if (!idx)
         return;
     for (size_t i = 0; i < idx; i++)
     {
+        strcpy(dm_task_name, "dm");  // 每次循环重置任务名
         char dm_id_buff[2] = {0};
         __itoa(i, dm_id_buff, 10);
         strcat(dm_task_name, dm_id_buff);
