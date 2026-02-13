@@ -127,6 +127,11 @@ module/motor/DMmotor/dmmotor.c \
 module/motor/XMmotor/xm_motor.c \
 module/motor/motor_task.c \
 module/motor/power_control.c \
+module/referee/referee_26.c \
+module/referee/referee_protocol_26.c \
+module/referee/referee_task_26.c \
+module/referee/referee_UI_26.c \
+module/referee/vtm_26.c \
 module/remote/remote_control.c
 
 # ASM sources
@@ -241,6 +246,7 @@ C_INCLUDES =  \
 -Imodule/imu \
 -Imodule/message_center \
 -Imodule/motor \
+-Imodule/referee \
 -Imodule/motor/DJImotor \
 -Imodule/motor/DMmotor \
 -Imodule/motor/XMmotor \
