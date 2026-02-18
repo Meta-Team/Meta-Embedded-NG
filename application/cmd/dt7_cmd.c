@@ -40,8 +40,8 @@ void RobotCMDInit()
     chassis_cmd_send.vy = 0;
     chassis_cmd_send.wz = 0;
 
-    gimbal_cmd_send.yaw = 0;
-    gimbal_cmd_send.pitch = 0;
+    gimbal_cmd_send.yaw = YAW_CHASSIS_ALIGN_ECD;
+    gimbal_cmd_send.pitch = PITCH_HORIZON_ECD;
 
     shoot_cmd_send.shoot_mode = SHOOT_OFF; // 初始状态关闭发射
     shoot_cmd_send.load_mode = LOAD_STOP;  // 初始状态停止拨盘
@@ -58,7 +58,8 @@ static void RemoteControlSet()
     gimbal_cmd_send.yaw += 0.0001f * (float)rc_data[TEMP].rc.rocker_r_;  // 右水平摇杆
     gimbal_cmd_send.pitch += 0.0001f * (float)rc_data[TEMP].rc.rocker_r1;  // 右垂直摇杆
 
-     // 摩擦轮控制,拨轮向上打为负,向下为正
+    // 摩擦轮控制,拨轮向上打为负,向下为正
+    // DT7遥控器的拨轮很容易坏,请注意
     if (rc_data[TEMP].rc.dial < -100) // 向上超过100,打开摩擦轮
     {
         shoot_cmd_send.shoot_mode = SHOOT_ON;
