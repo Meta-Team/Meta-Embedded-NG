@@ -15,7 +15,7 @@
 #define PITCH_MIN_ANGLE 0           // 云台竖直方向最小角度 (注意反馈如果是陀螺仪，则填写陀螺仪的角度)
 // 发射参数
 #define ONE_BULLET_DELTA_ANGLE 36    // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
-#define REDUCTION_RATIO_LOADER 1.0f  // 3508拨盘电机的减速比,未装减速箱
+#define REDUCTION_RATIO_LOADER 54.74f / 25.16f  // 3508拨盘电机的减速比,未装减速箱,拨盘齿轮减速比
 #define NUM_PER_CIRCLE 10            // 拨盘一圈的装载量
 
 /* 机器人底盘的参数 */

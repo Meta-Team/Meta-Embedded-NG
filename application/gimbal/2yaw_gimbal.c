@@ -6,6 +6,7 @@
 #include "message_center.h"
 #include "general_def.h"
 // #include "bmi088.h"
+#include "bsp_dwt.h"
 
 //static attitude_t *gimba_IMU_data; // 云台IMU数据
 static DJIMotorInstance *yaw_motor, *pitch_motor;
@@ -23,7 +24,7 @@ void GimbalInit()
     // YAW
     Motor_Init_Config_s yaw_config = {
         .can_init_config = {
-            .can_handle = &hfdcan1,
+            .can_handle = &hfdcan3,
             .tx_id = 1,
         },
         .controller_param_init_config = {
@@ -62,7 +63,7 @@ void GimbalInit()
     // PITCH
     Motor_Init_Config_s xm_config = {
         .can_init_config = {
-            .can_handle = &hfdcan1,
+            .can_handle = &hfdcan3,
             .rx_id = 1,  // 电机ID (1~127)
         },
         .controller_param_init_config = {
@@ -75,9 +76,8 @@ void GimbalInit()
     };
     // 电机对total_angle闭环,上电时为零,会保持静止,收到遥控器数据再动
     yaw_motor = DJIMotorInit(&yaw_config);
+    DWT_Delay(1); // 小米电机初始化需要1s时间
     xm_motor = XMMotorInit(&xm_config);
-
-    XMMotorEnable(xm_motor);
 
     // gimbal_pub = PubRegister("gimbal_feed", sizeof(Gimbal_Upload_Data_s));
     gimbal_sub = SubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));

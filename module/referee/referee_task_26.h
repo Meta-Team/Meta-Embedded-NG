@@ -1,7 +1,7 @@
 #ifndef REFEREE_H
 #define REFEREE_H
 
-#include "rm_referee.h"
+#include "referee_26.h"
 #include "robot_def.h"
 
 /**

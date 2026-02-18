@@ -8,10 +8,10 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "referee_task.h"
+#include "referee_task_26.h"
 #include "robot_def.h"
-#include "rm_referee.h"
-#include "referee_UI.h"
+#include "referee_26.h"
+#include "referee_UI_26.h"
 #include "string.h"
 #include "cmsis_os.h"
 
