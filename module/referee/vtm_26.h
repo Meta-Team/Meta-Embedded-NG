@@ -3,12 +3,10 @@
 
 #include "referee_protocol_26.h"
 #include "referee_26.h"
-#include "crc_ref.h"
 #include "bsp_usart.h"
-#include "bsp_log.h"
 
 #define RC_SOF1 0xA9 // VTM遥控数据起始字节 
-#define RC_SOF2 0x5A
+#define RC_SOF2 0x53
 
 // 检查接收值是否出错
 #define RC_CH_VALUE_MIN ((uint16_t)364)
@@ -17,6 +15,8 @@
 
 
 /* ----------------------- Data Struct ------------------------------------- */
+
+#pragma pack(1)
 
 typedef struct
 {
@@ -94,9 +94,6 @@ typedef struct
     uint16_t crc16;
 
 } RC_ctrl_t;
-
-
-#pragma pack(1)
 
 typedef struct
 {

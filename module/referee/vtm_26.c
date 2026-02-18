@@ -1,4 +1,8 @@
 #include "vtm_26.h"
+#include "cmsis_os.h"
+#include <string.h>
+#include "bsp_log.h"
+#include "crc_ref.h"
 
 #define VTM_RX_BUFFER_SIZE 255u // 图传接收缓冲区大小
 #define RC_FRAME_LEN 21u        // 遥控数据帧固定长度(字节)
@@ -20,12 +24,12 @@ static void VTMReadData(uint8_t *buff)
         return;
 
     // 使用循环逐帧解析缓冲区中的所有数据
-    // 至少需要2字节来判断帧头类型(0xA9 0x5A 或 0xA5)
+    // 至少需要2字节来判断帧头类型(0xA9 0x53 或 0xA5)
     while (read_offset + 2 <= VTM_RX_BUFFER_SIZE)
     {
         uint8_t *frame = buff + read_offset; // 当前帧起始地址
 
-        // 判断帧头: 0xA9 0x5A 为VTM遥控数据
+        // 判断帧头: 0xA9 0x53 为VTM遥控数据
         if (frame[0] == RC_SOF1 && frame[1] == RC_SOF2)
         {
             // 越界保护: 遥控帧完整长度不能超出缓冲区剩余空间
