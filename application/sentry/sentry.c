@@ -10,12 +10,16 @@ void SentryInit()
     BSPInit();
     RobotCMDInit();
     AGVChassisInit();
-    OSTaskInit();
+    SentryOSTaskInit();
     __enable_irq();
 }
 
-void SentryTask()
+void SentryControlTask()
 {
     RobotCMDTask();
     AGVChassisTask();
+}
+
+void SentryServiceTask()
+{
 }

@@ -3,6 +3,8 @@
 
 void SentryInit();
 
-void SentryTask();
+void SentryControlTask();
+
+void SentryServiceTask();
 
 #endif // !SENTRY_H

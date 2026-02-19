@@ -103,6 +103,7 @@ application/chassis/agv_chassis.c \
 application/cmd/dt7_cmd.c \
 application/gimbal/2yaw_gimbal.c \
 application/sentry/sentry.c \
+application/sentry/sentry_task.c \
 application/shoot/ammo_booster.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \
