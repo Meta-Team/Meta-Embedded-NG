@@ -101,6 +101,7 @@ Core/Src/sysmem.c \
 Core/Src/syscalls.c \
 application/chassis/agv_chassis.c \
 application/cmd/dt7_cmd.c \
+application/cmd/vtm_cmd.c \
 application/gimbal/2yaw_gimbal.c \
 application/sentry/sentry.c \
 application/sentry/sentry_task.c \

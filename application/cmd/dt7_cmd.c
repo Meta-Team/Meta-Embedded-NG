@@ -1,7 +1,6 @@
 // app
 #include "sentry_def.h"
 #include "dt7_cmd.h"
-#include "sentry_def.h"
 
 // module
 #include "remote_control.h"
