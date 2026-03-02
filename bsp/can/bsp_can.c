@@ -137,7 +137,7 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
 
 /* @todo 目前似乎封装过度,应该添加一个指向tx_buff的指针,tx_buff不应该由CAN instance保存 */
 /* 如果让CANinstance保存txbuff,会增加一次复制的开销 */
-uint8_t CANTransmit(CANInstance *_instance, float timeout)
+HAL_StatusTypeDef CANTransmit(CANInstance *_instance, float timeout)
 {
     static uint32_t busy_count;
     static volatile float wait_time __attribute__((unused)); // for cancel warning
@@ -148,7 +148,7 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
         {
             LOGWARNING("[bsp_can] FDCAN TxFifo full! failed to add msg to fifo. Cnt [%d]", busy_count);
             busy_count++;
-            return 0;
+            return HAL_BUSY;
         }
     }
     wait_time = DWT_GetTimeline_ms() - dwt_start;
@@ -157,9 +157,9 @@ uint8_t CANTransmit(CANInstance *_instance, float timeout)
     {
         LOGWARNING("[bsp_can] FDCAN bus BUSY! cnt:%d", busy_count);
         busy_count++;
-        return 0;
+        return HAL_BUSY;
     }
-    return 1; // 发送成功
+    return HAL_OK; // 发送成功
 }
 
 void CANSetDLC(CANInstance *_instance, uint8_t length)
