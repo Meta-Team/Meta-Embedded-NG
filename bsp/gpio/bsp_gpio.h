@@ -62,7 +62,7 @@ GPIOInstance *GPIORegister(GPIO_Init_Config_s *GPIO_config);
  *
  * @param _instance
  */
-void GPIOToggel(GPIOInstance *_instance);
+void GPIOToggle(GPIOInstance *_instance);
 
 /**
  * @brief 设置GPIO电平

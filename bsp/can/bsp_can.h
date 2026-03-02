@@ -81,6 +81,6 @@ void CANSetTxId(CANInstance *_instance, uint32_t tx_id);
  * @param timeout 超时时间,单位为ms;后续改为us,获得更精确的控制
  * @param _instance* can instance owned by module
  */
-uint8_t CANTransmit(CANInstance *_instance,float timeout);
+HAL_StatusTypeDef CANTransmit(CANInstance *_instance,float timeout);
 
 #endif
