@@ -39,8 +39,8 @@ void RobotCMDInit()
     chassis_cmd_send.vy = 0;
     chassis_cmd_send.wz = 0;
 
-    gimbal_cmd_send.yaw = YAW_CHASSIS_ALIGN_ECD;
-    gimbal_cmd_send.pitch = PITCH_HORIZON_ECD;
+    gimbal_cmd_send.yaw = YAW_CHASSIS_ALIGN_DEG;
+    gimbal_cmd_send.pitch = PITCH_HORIZON_RAD;
 
     shoot_cmd_send.shoot_mode = SHOOT_OFF; // 初始状态关闭发射
     shoot_cmd_send.load_mode = LOAD_STOP;  // 初始状态停止拨盘
