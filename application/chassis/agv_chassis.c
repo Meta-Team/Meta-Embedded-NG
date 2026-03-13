@@ -142,7 +142,7 @@ void AGVChassisInit()
                 .Ki = 0.05f,
                 .Kd = 0.0f,
                 .IntegralLimit = 3000,
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+                .Improve = PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .MaxOut = 16000,
             },
         },
@@ -165,10 +165,10 @@ void AGVChassisInit()
         .controller_param_init_config = {
             .angle_PID = {
                 .Kp = 10.0f,
-                .Ki = 0.2f,
+                .Ki = 0.0f,
                 .Kd = 0.0f,
                 .IntegralLimit = 0,
-                .Improve = PID_Derivative_On_Measurement,
+                .Improve = PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .MaxOut = 500,
             },
             .speed_PID = {
@@ -176,7 +176,7 @@ void AGVChassisInit()
                 .Ki = 0.2f,
                 .Kd = 0.0f,
                 .IntegralLimit = 3000,
-                .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
+                .Improve = PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .MaxOut = 16000,
             },
         },
