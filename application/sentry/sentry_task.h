@@ -19,4 +19,4 @@ void SentryOSTaskInit(void);
 
 void StartControlTask(void const *argument);
 void StartMotorTask(void const *argument);
-void StartServiceTask(void const *argument);
+void StartSensorTask(void const *argument);

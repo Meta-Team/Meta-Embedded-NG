@@ -2,7 +2,7 @@
 
 osThreadId controlTaskHandle;
 osThreadId motorTaskHandle;
-osThreadId serviceTaskHandle;
+osThreadId sensorTaskHandle;
 
 void SentryOSTaskInit(void)
 {
@@ -12,8 +12,8 @@ void SentryOSTaskInit(void)
     osThreadDef(motortask, StartMotorTask, osPriorityNormal, 0, 256);
     motorTaskHandle = osThreadCreate(osThread(motortask), NULL);
 
-    osThreadDef(servicetask, StartServiceTask, osPriorityBelowNormal, 0, 128);
-    serviceTaskHandle = osThreadCreate(osThread(servicetask), NULL);
+    osThreadDef(sensortask, StartSensorTask, osPriorityNormal, 0, 256);
+    sensorTaskHandle = osThreadCreate(osThread(sensortask), NULL);
 }
 
 __attribute__((noreturn)) void StartControlTask(void const *argument)
@@ -50,19 +50,19 @@ __attribute__((noreturn)) void StartMotorTask(void const *argument)
     }
 }
 
-__attribute__((noreturn)) void StartServiceTask(void const *argument)
+__attribute__((noreturn)) void StartSensorTask(void const *argument)
 {
-    static float service_dt;
-    static float service_start;
+    static float sensor_dt;
+    static float sensor_start;
     (void)argument;
-    LOGINFO("[freeRTOS] SERVICE Task Start");
+    LOGINFO("[freeRTOS] SENSOR Task Start");
     for (;;)
     {
-        service_start = DWT_GetTimeline_ms();
-        SentryServiceTask();
-        service_dt = DWT_GetTimeline_ms() - service_start;
-        if (service_dt > 10)
-            LOGERROR("[freeRTOS] SERVICE Task is being DELAY! dt = [%f]", &service_dt);
-        osDelay(10);
+        sensor_start = DWT_GetTimeline_ms();
+        SentrySensorTask();
+        sensor_dt = DWT_GetTimeline_ms() - sensor_start;
+        if (sensor_dt > 10)
+            LOGERROR("[freeRTOS] SENSOR Task is being DELAY! dt = [%f]", &sensor_dt);
+        osDelay(1);
     }
 }
