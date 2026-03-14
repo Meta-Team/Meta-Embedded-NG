@@ -11,6 +11,8 @@
 // bsp
 #include "bsp_init.h"
 
+#include "iwdg.h"
+
 void SentryInit()
 {
     __disable_irq();
@@ -32,4 +34,9 @@ void SentryControlTask()
 void SentrySensorTask()
 {
     // INS_Task();
+}
+
+void SentryWDTTask()
+{
+    HAL_IWDG_Refresh(&hiwdg1);
 }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SENTRY_TASK_H
+#define SENTRY_TASK_H
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -14,9 +15,13 @@
 extern osThreadId controlTaskHandle;
 extern osThreadId motorTaskHandle;
 extern osThreadId serviceTaskHandle;
+extern osThreadId WDTTaskHandle;
 
 void SentryOSTaskInit(void);
 
 void StartControlTask(void const *argument);
 void StartMotorTask(void const *argument);
 void StartSensorTask(void const *argument);
+void StartWDTTask(void const *argument);
+
+#endif // !SENTRY_TASK_H
