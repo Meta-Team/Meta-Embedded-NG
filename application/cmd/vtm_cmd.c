@@ -163,7 +163,7 @@ static void VTMControlSet()
 
 
     // 云台控制增量是摇杆对时间的积分
-    yaw_gimbal += stick_RH * PI * delta_time;
+    yaw_gimbal += stick_RH * 180 * delta_time;
     pitch_gimbal += stick_RV * delta_time;
 
     switch (vtm_data->rc_ctrl.rc.bit.mode_switch)
