@@ -5,6 +5,7 @@
 #include "vtm_cmd.h"
 
 // module
+#include "daemon.h"
 #include "ins_task.h"
 #include "sentry_task.h"
 
@@ -38,5 +39,6 @@ void SentrySensorTask()
 
 void SentryWDTTask()
 {
+    DaemonTask();
     HAL_IWDG_Refresh(&hiwdg1);
 }

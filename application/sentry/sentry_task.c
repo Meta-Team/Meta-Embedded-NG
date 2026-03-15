@@ -85,6 +85,6 @@ __attribute__((noreturn)) void StartWDTTask(void const *argument)
         wdt_dt = DWT_GetTimeline_ms() - wdt_start;
         if (wdt_dt > 1)
             LOGERROR("[freeRTOS] WDT Task is being DELAY! dt = [%f]", &wdt_dt);
-        osDelay(100);
+        osDelay(10);
     }
 }
