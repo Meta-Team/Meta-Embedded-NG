@@ -98,6 +98,14 @@ vtm_info_t *VTMInit(UART_HandleTypeDef *vtm_usart_handle)
     conf.recv_buff_size = VTM_RX_BUFFER_SIZE; // mx 255(u8)
     vtm_usart_instance = USARTRegister(&conf);
 
+    // vtm_info默认为全0,上电如果没连图传串口线会导致底盘乱跑
+    // 所以初始化为摇杆归中
+    vtm_info.rc_ctrl.rc.bit.stick_RH = 1024;
+    vtm_info.rc_ctrl.rc.bit.stick_RV = 1024;
+    vtm_info.rc_ctrl.rc.bit.stick_LV = 1024;
+    vtm_info.rc_ctrl.rc.bit.stick_LH = 1024;
+    vtm_info.rc_ctrl.rc.bit.dial = 1024;
+
     // Daemon_Init_Config_s daemon_conf = {
     //     .callback = VTMLostCallback,
     //     .owner_id = vtm_usart_instance,
