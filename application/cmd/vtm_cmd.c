@@ -14,7 +14,7 @@
 #include "arm_math.h"
 
 #define CLICK_LONG_PRESS_THRESHOLD_MS 150.0f
-#define CHASSIS_FOLLOW_KP 1.0f
+#define CHASSIS_FOLLOW_KP 0.5f
 
 static Publisher_t *chassis_cmd_pub;   // 底盘控制消息发布者
 static Subscriber_t *chassis_feed_sub; // 底盘反馈信息订阅者
@@ -117,12 +117,16 @@ void VTMCMDInit()
     chassis_cmd_send.wz = 0;
     chassis_cmd_send.chassis_mode = CHASSIS_NO_FOLLOW;
 
-    gimbal_cmd_send.yaw = YAW_CHASSIS_ALIGN_DEG;
-    gimbal_cmd_send.pitch = PITCH_HORIZON_RAD;
+    // gimbal_cmd_send.yaw = YAW_CHASSIS_ALIGN_DEG;
+    // gimbal_cmd_send.pitch = PITCH_HORIZON_RAD;
+    gimbal_cmd_send.yaw = 0;
+    gimbal_cmd_send.pitch = 0;
     gimbal_cmd_send.chassis_mode = CHASSIS_NO_FOLLOW;
 
-    yaw_gimbal = YAW_CHASSIS_ALIGN_DEG;
-    pitch_gimbal = PITCH_HORIZON_RAD;
+    // yaw_gimbal = YAW_CHASSIS_ALIGN_DEG;
+    // pitch_gimbal = PITCH_HORIZON_RAD;
+    yaw_gimbal = 0;
+    pitch_gimbal = 0;
 
     ClickFSMInit();
     shoot_cmd_send.state = trigger_click_fsm.state;
@@ -190,7 +194,7 @@ static void VTMControlSet()
         // 云台
         gimbal_cmd_send.yaw = yaw_gimbal;
         gimbal_cmd_send.pitch = pitch_gimbal;
-        chassis_cmd_send.chassis_mode = CHASSIS_FOLLOW_GIMBAL_YAW;
+        gimbal_cmd_send.chassis_mode = CHASSIS_FOLLOW_GIMBAL_YAW;
         break;
     case 2: // 小陀螺
         // 底盘
@@ -202,7 +206,7 @@ static void VTMControlSet()
         // 云台
         gimbal_cmd_send.yaw = yaw_gimbal;
         gimbal_cmd_send.pitch = pitch_gimbal;
-        chassis_cmd_send.chassis_mode = CHASSIS_ROTATE;
+        gimbal_cmd_send.chassis_mode = CHASSIS_ROTATE;
         break;
     default:
         break;

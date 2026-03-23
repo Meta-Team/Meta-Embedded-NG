@@ -7,18 +7,20 @@
 
 #define VISION_USE_VCP
 
-// 云台参数
-#define YAW_CHASSIS_ALIGN_DEG 0     // 云台和底盘对齐指向相同方向时的电机角度值,若对云台有机械改动需要修改
-#define YAW_ECD_GREATER_THAN_4096 0 // ALIGN_ECD值是否大于4096,是为1,否为0;用于计算云台偏转角度
-#define PITCH_HORIZON_RAD 0         // 云台处于水平位置时电机弧度值,若对云台有机械改动需要修改
-#define PITCH_MAX_RAD -0.5           // 云台竖直方向最大角度 (注意反馈如果是陀螺仪，则填写陀螺仪的角度)
-#define PITCH_MIN_RAD 0.5           // 云台竖直方向最小角度 (注意反馈如果是陀螺仪，则填写陀螺仪的角度)
-// 发射参数
+/* 底盘参数 */
+#define YAW_CHASSIS_ALIGN_DEG 295   // 云台和底盘对齐指向相同方向时的电机角度值,若对云台有机械改动需要修改
+#define PITCH_HORIZON_RAD -1        // 云台处于水平位置时电机弧度值,若对云台有机械改动需要修改
+#define PITCH_MAX_RAD 0.5           // 云台竖直方向最大角度 (电机编码弧度)
+#define PITCH_MIN_RAD -1.5          // 云台竖直方向最小角度 (电机编码弧度)
+#define PITCH_MAX_VEL 1             // 云台竖直方向最大速度 (电机编码弧度)
+#define PITCH_MIN_VEL -1           // 云台竖直方向最小速度 (电机编码弧度)
+
+/* 底盘参数 */
 #define ONE_BULLET_DELTA_ANGLE 36    // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
 #define REDUCTION_RATIO_LOADER (54.74f / 25.16f)  // 3508拨盘电机的减速比,未装减速箱,拨盘齿轮减速比
 #define NUM_PER_CIRCLE 10            // 拨盘一圈的装载量
 
-/* 机器人底盘的参数 */
+/* 底盘参数 */
 #define CHASSIS_RY (326.0f / 2.0f)     // 纵向轮距(前进后退方向),单位为mm(毫米)
 #define CHASSIS_RX (326.0f / 2.0f)     // 横向轮距(左右平移方向),单位为mm(毫米)
 #define CHASSIS_RX_M (CHASSIS_RX / 1000.0f)  // 转换为米

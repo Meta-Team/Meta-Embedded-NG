@@ -13,4 +13,6 @@ void GimbalInit();
  */
 void GimbalTask();
 
+void GimbalDataTask();
+
 #endif // _2YAW_GIMBAL_H

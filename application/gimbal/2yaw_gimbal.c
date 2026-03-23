@@ -9,8 +9,8 @@
 #include "ins_task.h"
 #include "bsp_dwt.h"
 
-//static attitude_t *gimba_IMU_data; // 云台IMU数据
 static attitude_t *gimbal_IMU_data;
+static float GyroDeg[3];
 static DJIMotorInstance *yaw_motor, *pitch_motor;
 static XMMotorInstance *xm_motor;
 
@@ -21,8 +21,7 @@ static Gimbal_Ctrl_Cmd_s gimbal_cmd_recv;         // 来自cmd的控制信息
 
 // static BMI088Instance *bmi088; // 云台IMU
 void GimbalInit()
-{   
-    // gimba_IMU_data = INS_Init(); // IMU先初始化,获取姿态数据指针赋给yaw电机的其他数据来源
+{
     gimbal_IMU_data = INS_Init();
     // YAW
     Motor_Init_Config_s yaw_config = {
@@ -32,7 +31,7 @@ void GimbalInit()
         },
         .controller_param_init_config = {
             .angle_PID = {
-                .Kp = 8, // 8
+                .Kp = 30,
                 .Ki = 0,
                 .Kd = 0,
                 .DeadBand = 0.1,
@@ -41,18 +40,16 @@ void GimbalInit()
                 .MaxOut = 1000,
             },
             .speed_PID = {
-                .Kp = 50,  // 50
-                .Ki = 200, // 200
+                .Kp = 50,
+                .Ki = 200,
                 .Kd = 0,
                 .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .IntegralLimit = 10000,
                 .MaxOut = 20000,
             },
-            // .other_angle_feedback_ptr = &gimba_IMU_data->YawTotalAngle,
             .other_angle_feedback_ptr = &gimbal_IMU_data->YawTotalAngle,
-            // 还需要增加角速度额外反馈指针,注意方向,ins_task.md中有c板的bodyframe坐标系说明
             // .other_speed_feedback_ptr = &gimba_IMU_data->Gyro[2],
-            .other_speed_feedback_ptr = &gimbal_IMU_data->Gyro[2],
+            .other_speed_feedback_ptr = &GyroDeg[2],
         },
         .controller_setting_init_config = {
             .angle_feedback_source = OTHER_FEED,
@@ -72,8 +69,8 @@ void GimbalInit()
             .rx_id = 1,  // 电机ID (1~127)
         },
         .controller_param_init_config = {
-            .angle_PID = { .Kp = 4.0f },   // MIT模式位置Kp
-            .speed_PID = { .Kd = 0.2f },   // MIT模式阻尼Kd
+            .angle_PID = { .Kp = 20.0f },   // MIT模式位置Kp
+            .speed_PID = { .Kd = 1.0f },   // MIT模式阻尼Kd
         },
         .controller_setting_init_config = {
             .motor_reverse_flag = MOTOR_DIRECTION_NORMAL,
@@ -81,8 +78,9 @@ void GimbalInit()
     };
     // 电机对total_angle闭环,上电时为零,会保持静止,收到遥控器数据再动
     yaw_motor = DJIMotorInit(&yaw_config);
-    DWT_Delay(1); // 小米电机初始化需要1s时间
+    // DWT_Delay(1); // 小米电机初始化需要1s时间
     xm_motor = XMMotorInit(&xm_config);
+    XMMotorControlInit();
 
     gimbal_pub = PubRegister("gimbal_feed", sizeof(Gimbal_Upload_Data_s));
     gimbal_sub = SubRegister("gimbal_cmd", sizeof(Gimbal_Ctrl_Cmd_s));
@@ -100,8 +98,32 @@ void GimbalTask()
     case 0:
     case 1:
     case 2:
+        float target_imu_angle = gimbal_cmd_recv.pitch;
+        float imu_error = target_imu_angle - gimbal_IMU_data->Pitch;
+        float mit_target_angle = xm_motor->measure.position  + 1.0 * imu_error * DEGREE_2_RAD;
+        float mit_target_speed = xm_motor->measure.velocity - 1.0 * gimbal_IMU_data->Gyro[0];
+
+        if (mit_target_angle > PITCH_MAX_RAD)
+        {
+            mit_target_angle = PITCH_MAX_RAD;
+        }
+        else if (mit_target_angle < PITCH_MIN_RAD)
+        {
+            mit_target_angle = PITCH_MIN_RAD;
+        }
+
+        if (mit_target_speed > PITCH_MAX_VEL)
+        {
+            mit_target_speed = PITCH_MAX_VEL;
+        }
+        else if (mit_target_speed < PITCH_MIN_VEL)
+        {
+            mit_target_speed = PITCH_MIN_VEL;
+        }
+
         DJIMotorSetRef(yaw_motor, gimbal_cmd_recv.yaw);
-        XMMotorSetRef(xm_motor, 0, 0, 0);
+        XMMotorSetRef(xm_motor, mit_target_angle, mit_target_speed, 0);
+        // XMMotorSetRef(xm_motor, -1, 0, 0);
         break;
     default:
         break;
@@ -158,4 +180,11 @@ void GimbalTask()
 
     // 推送消息
     PubPushMessage(gimbal_pub, (void *)&gimbal_feedback_data);
+}
+
+void GimbalDataTask()
+{
+    GyroDeg[0] = gimbal_IMU_data->Gyro[0] * RAD_2_DEGREE;
+    GyroDeg[1] = gimbal_IMU_data->Gyro[1] * RAD_2_DEGREE;
+    GyroDeg[2] = gimbal_IMU_data->Gyro[2] * RAD_2_DEGREE;
 }

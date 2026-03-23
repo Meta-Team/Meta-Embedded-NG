@@ -34,7 +34,8 @@ void SentryControlTask()
 
 void SentrySensorTask()
 {
-    // INS_Task();
+    INS_Task();
+    GimbalDataTask();
 }
 
 void SentryWDTTask()
