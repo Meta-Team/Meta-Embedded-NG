@@ -124,6 +124,8 @@ module/algorithm/user_lib.c \
 module/BMI088/bmi088.c \
 module/daemon/daemon.c \
 module/imu/ins_task.c \
+module/master_machine/vision_26.c \
+module/master_machine/vision_protocol_26.c \
 module/message_center/message_center.c \
 module/motor/DJImotor/dji_motor.c \
 module/motor/DMmotor/dmmotor.c \
@@ -249,6 +251,7 @@ C_INCLUDES =  \
 -Imodule/BMI088 \
 -Imodule/daemon \
 -Imodule/imu \
+-Imodule/master_machine \
 -Imodule/message_center \
 -Imodule/motor \
 -Imodule/referee \
