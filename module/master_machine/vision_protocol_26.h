@@ -18,23 +18,23 @@
 
 typedef struct
 {
-	uint8_t enemy_color;
-	float car_yaw;
-	float car_pitch;
-	uint8_t grade;
+    uint8_t enemy_color;
+    float car_yaw;
+    float car_pitch;
+    uint8_t grade;
 } Vision_Tx_Frame_s;
 
 typedef struct
 {
-	float pitch;
-	float yaw;
-	float yaw_speed;
-	int16_t can_shoot;
-	int16_t move_state;
-	int16_t if_get;
-	uint8_t enemy_kind;
-	int16_t enemy_x;
-	int16_t enemy_y;
+    float pitch;
+    float yaw;
+    float yaw_speed;
+    int16_t can_shoot;
+    int16_t move_state;
+    int16_t if_get;
+    uint8_t enemy_kind;
+    int16_t enemy_x;
+    int16_t enemy_y;
 } Vision_Rx_Frame_s;
 
 void VisionPackTxFrame(const Vision_Tx_Frame_s *frame, uint8_t *tx_buf, uint16_t *tx_len);
