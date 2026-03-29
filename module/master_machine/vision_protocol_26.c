@@ -76,7 +76,7 @@ static float VisionReadF32LE(const uint8_t *buffer)
 	return value;
 }
 
-void VisionPackReadFrame(const Vision_Read_Frame_s *frame, uint8_t *tx_buf, uint16_t *tx_len)
+void VisionPackTxFrame(const Vision_Tx_Frame_s *frame, uint8_t *tx_buf, uint16_t *tx_len)
 {
 	uint16_t crc16;
 	tx_buf[0] = VISION_READ_FRAME_HEAD;
@@ -92,7 +92,7 @@ void VisionPackReadFrame(const Vision_Read_Frame_s *frame, uint8_t *tx_buf, uint
 	*tx_len = VISION_READ_FRAME_LEN;
 }
 
-uint8_t VisionUnpackSendFrame(const uint8_t *rx_buf, uint16_t rx_len, Vision_Send_Frame_s *frame)
+uint8_t VisionUnpackRxFrame(const uint8_t *rx_buf, uint16_t rx_len, Vision_Rx_Frame_s *frame)
 {
 	uint16_t offset;
 	for (offset = 0; (uint32_t)offset + VISION_SEND_FRAME_LEN <= rx_len; offset++)

@@ -11,15 +11,17 @@
 
 #define VISION_RECV_BUFF_SIZE 64u
 
-typedef Vision_Read_Frame_s Vision_Tx_s;
-typedef Vision_Send_Frame_s Vision_Rx_s;
+typedef Vision_Tx_Frame_s Vision_Tx_s;
+typedef Vision_Rx_Frame_s Vision_Rx_s;
 
 Vision_Rx_s *VisionInit(UART_HandleTypeDef *uart_handle);
 
-void VisionSetSendData(uint8_t enemy_color, float car_yaw, float car_pitch, uint8_t grade);
+void VisionSetTxData(uint8_t enemy_color, float car_yaw, float car_pitch, uint8_t grade);
 
 void VisionSend(void);
 
-Vision_Tx_s *VisionGetSendData(void);
+void VisionTask(void);
+
+Vision_Tx_s *VisionGetTxData(void);
 
 #endif

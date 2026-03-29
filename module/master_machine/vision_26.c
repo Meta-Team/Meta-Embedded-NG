@@ -7,6 +7,8 @@
 #include "daemon.h"
 #include "bsp_log.h"
 #include "sentry_def.h"
+#include "ins_task.h"
+#include "general_def.h"
 
 static Vision_Rx_s vision_rx_data;
 static Vision_Tx_s vision_tx_data;
@@ -20,7 +22,7 @@ static void VisionOfflineCallback(void *owner_id)
 	LOGWARNING("[vision] communication offline, restart service.");
 }
 
-void VisionSetSendData(uint8_t enemy_color, float car_yaw, float car_pitch, uint8_t grade)
+void VisionSetTxData(uint8_t enemy_color, float car_yaw, float car_pitch, uint8_t grade)
 {
 	vision_tx_data.enemy_color = enemy_color;
 	vision_tx_data.car_yaw = car_yaw;
@@ -28,7 +30,7 @@ void VisionSetSendData(uint8_t enemy_color, float car_yaw, float car_pitch, uint
 	vision_tx_data.grade = grade;
 }
 
-Vision_Tx_s *VisionGetSendData(void)
+Vision_Tx_s *VisionGetTxData(void)
 {
 	return &vision_tx_data;
 }
@@ -41,7 +43,7 @@ static USARTInstance *vision_usart_instance;
 
 static void VisionDecodeFromBuffer(const uint8_t *buffer, uint16_t length)
 {
-	if (VisionUnpackSendFrame(buffer, length, &vision_rx_data))
+	if (VisionUnpackRxFrame(buffer, length, &vision_rx_data))
 	{
 		// DaemonReload(vision_daemon);
 	}
@@ -75,7 +77,7 @@ void VisionSend(void)
 	static uint8_t send_buffer[VISION_READ_FRAME_LEN];
 	static uint16_t send_len;
 
-	VisionPackReadFrame(&vision_tx_data, send_buffer, &send_len);
+	VisionPackTxFrame(&vision_tx_data, send_buffer, &send_len);
 	USARTSend(vision_usart_instance, send_buffer, send_len, USART_TRANSFER_DMA);
 }
 
@@ -89,7 +91,7 @@ static uint8_t *vision_vcp_rx_buffer;
 
 static void VisionDecodeCallback(uint16_t recv_len)
 {
-	if (VisionUnpackSendFrame(vision_vcp_rx_buffer, recv_len, &vision_rx_data))
+	if (VisionUnpackRxFrame(vision_vcp_rx_buffer, recv_len, &vision_rx_data))
 	{
 		// DaemonReload(vision_daemon);
 	}
@@ -118,8 +120,20 @@ void VisionSend(void)
 	static uint8_t send_buffer[VISION_READ_FRAME_LEN];
 	static uint16_t send_len;
 
-	VisionPackReadFrame(&vision_tx_data, send_buffer, &send_len);
+	VisionPackTxFrame(&vision_tx_data, send_buffer, &send_len);
 	USBTransmit(send_buffer, send_len);
 }
 
 #endif
+
+void VisionTask(void)
+{
+	attitude_t *ins_data = INS_Init();
+
+	VisionSetTxData(
+		vision_tx_data.enemy_color,
+		ins_data->Yaw * DEGREE_2_RAD,
+		ins_data->Pitch * DEGREE_2_RAD,
+		vision_tx_data.grade);
+	VisionSend();
+}

@@ -22,7 +22,7 @@ typedef struct
 	float car_yaw;
 	float car_pitch;
 	uint8_t grade;
-} Vision_Read_Frame_s;
+} Vision_Tx_Frame_s;
 
 typedef struct
 {
@@ -35,10 +35,10 @@ typedef struct
 	uint8_t enemy_kind;
 	int16_t enemy_x;
 	int16_t enemy_y;
-} Vision_Send_Frame_s;
+} Vision_Rx_Frame_s;
 
-void VisionPackReadFrame(const Vision_Read_Frame_s *frame, uint8_t *tx_buf, uint16_t *tx_len);
+void VisionPackTxFrame(const Vision_Tx_Frame_s *frame, uint8_t *tx_buf, uint16_t *tx_len);
 
-uint8_t VisionUnpackSendFrame(const uint8_t *rx_buf, uint16_t rx_len, Vision_Send_Frame_s *frame);
+uint8_t VisionUnpackRxFrame(const uint8_t *rx_buf, uint16_t rx_len, Vision_Rx_Frame_s *frame);
 
 #endif
