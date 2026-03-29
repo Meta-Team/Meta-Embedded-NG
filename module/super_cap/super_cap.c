@@ -14,12 +14,12 @@ static SuperCapInstance *super_cap_instance = NULL; // 可以由app保存此指�
 static void SuperCapRxCallback(CANInstance *_instance)
 {
     uint8_t *rxbuff;
-    SuperCap_Msg_s *Msg;
+    SuperCap_Rx_s *msg;
     rxbuff = _instance->rx_buff;
-    Msg = &super_cap_instance->cap_msg;
-    Msg->vol = (uint16_t)(rxbuff[0] << 8 | rxbuff[1]);
-    Msg->current = (uint16_t)(rxbuff[2] << 8 | rxbuff[3]);
-    Msg->power = (uint16_t)(rxbuff[4] << 8 | rxbuff[5]);
+    msg = &super_cap_instance->cap_rx;
+    msg->cap_voltage = (float)(((uint16_t)rxbuff[0] << 8) | (uint16_t)rxbuff[1]) / 1000.0f;
+    msg->cap_energy = (float)(((uint16_t)rxbuff[2] << 8) | (uint16_t)rxbuff[3]) / 29.78863f;
+    msg->fsm_state = (uint8_t)(rxbuff[4]);
 }
 
 SuperCapInstance *SuperCapInit(SuperCap_Init_Config_s *supercap_config)
@@ -34,11 +34,12 @@ SuperCapInstance *SuperCapInit(SuperCap_Init_Config_s *supercap_config)
 
 void SuperCapSend(SuperCapInstance *instance, uint8_t *data)
 {
-    memcpy(instance->can_ins->tx_buff, data, 8);
-    CANTransmit(instance->can_ins,1);
+    memcpy(instance->can_ins->tx_buff, data, 3);
+    CANSetDLC(instance->can_ins, 3);
+    CANTransmit(instance->can_ins, 1);
 }
 
-SuperCap_Msg_s SuperCapGet(SuperCapInstance *instance)
+SuperCap_Rx_s SuperCapGet(SuperCapInstance *instance)
 {
-    return instance->cap_msg;
+    return instance->cap_rx;
 }

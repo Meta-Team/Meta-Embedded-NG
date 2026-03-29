@@ -13,17 +13,25 @@
 #pragma pack(1)
 typedef struct
 {
-    uint16_t vol; // 电压
-    uint16_t current; // 电流
-    uint16_t power; // 功率
-} SuperCap_Msg_s;
+    uint8_t pwr_limit; // 裁判系统功率限制(20-120W)
+    uint8_t buffer_energy; // 裁判系统缓冲能量(J)
+    uint8_t extra_cmd; // 额外命令
+} SuperCap_Tx_s;
 #pragma pack()
+
+typedef struct
+{
+    float cap_voltage; // 当前电容端电压(V)
+    float cap_energy; // 电容剩余能量
+    uint8_t fsm_state; // 状态码
+} SuperCap_Rx_s;
 
 /* 超级电容实例 */
 typedef struct
 {
     CANInstance *can_ins; // CAN实例
-    SuperCap_Msg_s cap_msg; // 超级电容信息
+    SuperCap_Tx_s cap_tx; // 发送给超电
+    SuperCap_Rx_s cap_rx; // 从超电接收
 } SuperCapInstance;
 
 /* 超级电容初始化配置 */
