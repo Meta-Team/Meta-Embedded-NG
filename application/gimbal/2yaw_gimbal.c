@@ -122,6 +122,7 @@ void GimbalTask()
         }
 
         DJIMotorSetRef(yaw_motor, gimbal_cmd_recv.yaw);
+        XMMotorEnable(xm_motor);
         XMMotorSetRef(xm_motor, mit_target_angle, mit_target_speed, 0);
         // XMMotorSetRef(xm_motor, -1, 0, 0);
         break;
