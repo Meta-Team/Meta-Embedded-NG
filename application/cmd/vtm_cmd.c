@@ -14,7 +14,7 @@
 #include "arm_math.h"
 
 #define CLICK_LONG_PRESS_THRESHOLD_MS 150.0f
-#define CHASSIS_FOLLOW_KP 0.5f
+#define CHASSIS_FOLLOW_KP -0.5f
 
 static Publisher_t *chassis_cmd_pub;   // 底盘控制消息发布者
 static Subscriber_t *chassis_feed_sub; // 底盘反馈信息订阅者
@@ -168,7 +168,7 @@ static void VTMControlSet()
 
     // 云台控制增量是摇杆对时间的积分
     yaw_gimbal += stick_RH * -180 * delta_time;
-    pitch_gimbal += stick_RV * delta_time;
+    pitch_gimbal += stick_RV * 90 * delta_time;
 
     switch (vtm_data->rc_ctrl.rc.bit.mode_switch)
     {
