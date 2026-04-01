@@ -45,7 +45,7 @@ void GimbalInit()
                 .Kd = 0,
                 .Improve = PID_Trapezoid_Intergral | PID_Integral_Limit | PID_Derivative_On_Measurement,
                 .IntegralLimit = 10000,
-                .MaxOut = 20000,
+                .MaxOut = 15000,
             },
             .other_angle_feedback_ptr = &gimbal_IMU_data->YawTotalAngle,
             // .other_speed_feedback_ptr = &gimba_IMU_data->Gyro[2],
