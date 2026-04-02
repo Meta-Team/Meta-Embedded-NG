@@ -3,6 +3,7 @@
 osThreadId controlTaskHandle;
 osThreadId motorTaskHandle;
 osThreadId sensorTaskHandle;
+osThreadId commTaskHandle;
 osThreadId WDTTaskHandle;
 
 void SentryOSTaskInit(void)
@@ -16,8 +17,11 @@ void SentryOSTaskInit(void)
     osThreadDef(sensortask, StartSensorTask, osPriorityNormal, 0, 256);
     sensorTaskHandle = osThreadCreate(osThread(sensortask), NULL);
 
+    osThreadDef(commtask, StartCommTask, osPriorityNormal, 0, 256);
+    commTaskHandle = osThreadCreate(osThread(commtask), NULL);
+
     osThreadDef(wdttask, StartWDTTask, osPriorityNormal, 0, 256);
-    sensorTaskHandle = osThreadCreate(osThread(wdttask), NULL);
+    WDTTaskHandle = osThreadCreate(osThread(wdttask), NULL);
 }
 
 __attribute__((noreturn)) void StartControlTask(void const *argument)
@@ -71,6 +75,22 @@ __attribute__((noreturn)) void StartSensorTask(void const *argument)
     }
 }
 
+__attribute__((noreturn)) void StartCommTask(void const *argument)
+{
+    static float comm_dt;
+    static float comm_start;
+    (void)argument;
+    LOGINFO("[freeRTOS] COMM Task Start");
+    for (;;)
+    {
+        comm_start = DWT_GetTimeline_ms();
+        SentryCommTask();
+        comm_dt = DWT_GetTimeline_ms() - comm_start;
+        if (comm_dt > 1)
+            LOGERROR("[freeRTOS] COMM Task is being DELAY! dt = [%f]", &comm_dt);
+        osDelay(10);
+    }
+}
 
 __attribute__((noreturn)) void StartWDTTask(void const *argument)
 {

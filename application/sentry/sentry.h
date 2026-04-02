@@ -7,6 +7,8 @@ void SentryControlTask();
 
 void SentrySensorTask();
 
+void SentryCommTask();
+
 void SentryWDTTask();
 
 #endif // !SENTRY_H

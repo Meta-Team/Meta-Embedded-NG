@@ -2,12 +2,15 @@
 #include "2yaw_gimbal.h"
 #include "agv_chassis.h"
 #include "sentry.h"
-#include "vtm_cmd.h"
+// #include "vtm_cmd.h"
+#include "auto_cmd.h"
+#include "auto_ammo_booster.h"
 
 // module
 #include "daemon.h"
 #include "ins_task.h"
 #include "sentry_task.h"
+#include "vision_26.h"
 
 // bsp
 #include "bsp_init.h"
@@ -18,18 +21,22 @@ void SentryInit()
 {
     __disable_irq();
     BSPInit();
-    VTMCMDInit();
+    // VTMCMDInit();
+    AUTOCMDInit();
     AGVChassisInit();
     GimbalInit();
+    // ShootInit();
     SentryOSTaskInit();
     __enable_irq();
 }
 
 void SentryControlTask()
 {
-    VTMCMDTask();
+    // VTMCMDTask();
+    AUTOCMDTask();
     AGVChassisTask();
     GimbalTask();
+    // ShootTask();
 }
 
 void SentrySensorTask()
@@ -38,8 +45,15 @@ void SentrySensorTask()
     GimbalDataTask();
 }
 
+void SentryCommTask()
+{
+    // RefereeTask();
+    VisionTask();
+    // SuperCapTask();
+}
+
 void SentryWDTTask()
 {
-    DaemonTask();
-    HAL_IWDG_Refresh(&hiwdg1);
+    // DaemonTask();
+    // HAL_IWDG_Refresh(&hiwdg1);
 }

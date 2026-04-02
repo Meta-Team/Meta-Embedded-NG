@@ -100,12 +100,13 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
 application/chassis/agv_chassis.c \
+application/cmd/auto_cmd.c \
 application/cmd/dt7_cmd.c \
 application/cmd/vtm_cmd.c \
 application/gimbal/2yaw_gimbal.c \
 application/sentry/sentry.c \
 application/sentry/sentry_task.c \
-application/shoot/ammo_booster.c \
+application/shoot/auto_ammo_booster.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \
 bsp/dwt/bsp_dwt.c \

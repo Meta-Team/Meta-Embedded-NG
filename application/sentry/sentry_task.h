@@ -14,7 +14,8 @@
 
 extern osThreadId controlTaskHandle;
 extern osThreadId motorTaskHandle;
-extern osThreadId serviceTaskHandle;
+extern osThreadId sensorTaskHandle;
+extern osThreadId commTaskHandle;
 extern osThreadId WDTTaskHandle;
 
 void SentryOSTaskInit(void);
@@ -22,6 +23,7 @@ void SentryOSTaskInit(void);
 void StartControlTask(void const *argument);
 void StartMotorTask(void const *argument);
 void StartSensorTask(void const *argument);
+void StartCommTask(void const *argument);
 void StartWDTTask(void const *argument);
 
 #endif // !SENTRY_TASK_H
