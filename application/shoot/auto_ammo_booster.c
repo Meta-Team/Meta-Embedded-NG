@@ -17,7 +17,7 @@ static Subscriber_t *shoot_sub;
 // static Shoot_Upload_Data_s shoot_feedback_data; // 来自cmd的发射控制信息
 
 #define FRICTION_TARGET_SPEED 40000.0f
-#define JAM_BACKOFF_ANGLE (PI / 12.0f * 180.0f / PI)
+#define JAM_BACKOFF_ANGLE (360.0f)
 
 #define HEAT_PER_SHOT 10.0f
 #define HEAT_COOL_RATE 30.0f
@@ -50,8 +50,6 @@ typedef struct
     Jam_State_e jam_state;
     Fire_State_e fire_state;
 
-    loader_mode_e last_load_mode;
-
     float now_ms;
     float dt_s;
     float last_tick_ms;
@@ -82,8 +80,6 @@ static void ShootSystemInit(void)
 {
     shoot_sys.jam_state = JAM_NORMAL;
     shoot_sys.fire_state = FIRE_DISABLE;
-
-    shoot_sys.last_load_mode = LOAD_STOP;
 
     shoot_sys.now_ms = 0.0f;
     shoot_sys.dt_s = 0.0f;
@@ -385,18 +381,26 @@ void ShootInit()
         .controller_param_init_config = {
             .speed_PID = {
                 .Kp = 7.5,
-                .Ki = 10,
+                .Ki = 20,
                 .Kd = 0,
                 .Improve = PID_Integral_Limit,
-                .IntegralLimit = 25000,
-                .MaxOut = 25000,
+                .IntegralLimit = 12288,
+                .MaxOut = 12288,
+            },
+            .current_PID = {
+                .Kp = 1,
+                .Ki = 50,
+                .Kd = 0,
+                .Improve = PID_Integral_Limit,
+                .IntegralLimit = 12288,
+                .MaxOut = 12288,
             },
         },
         .controller_setting_init_config = {
             .angle_feedback_source = MOTOR_FEED,
             .speed_feedback_source = MOTOR_FEED,
             .outer_loop_type = SPEED_LOOP,
-            .close_loop_type = SPEED_LOOP,
+            .close_loop_type = SPEED_LOOP | CURRENT_LOOP,
             .motor_reverse_flag = MOTOR_DIRECTION_NORMAL, // 注意方向设置为拨盘的拨出的击发方向
         },
         .motor_type = M3508
@@ -414,28 +418,11 @@ void ShootTask()
     // 从cmd获取控制数据
     SubGetMessage(shoot_sub, &shoot_cmd_recv);
 
-    // ShootCaptureSignals();
-    // ShootUpdateHeatFSM();
-    // ShootUpdateJamFSM();
-    // ShootUpdateFireFSM();
-    // ShootApplyOutput();
-
-    if (shoot_cmd_recv.state == FIRE_ON)
-    {
-        DJIMotorEnable(friction_l);
-        DJIMotorEnable(friction_r);
-        DJIMotorEnable(loader);
-        DJIMotorSetRef(friction_l, 40000);
-        DJIMotorSetRef(friction_r, 40000);
-        DJIMotorSetRef(loader, 720);
-    }
-    else
-    {
-        DJIMotorSetRef(friction_l, 0);
-        DJIMotorSetRef(friction_r, 0);
-        DJIMotorSetRef(loader, 0);
-    }
-
+    ShootCaptureSignals();
+    ShootUpdateHeatFSM();
+    ShootUpdateJamFSM();
+    ShootUpdateFireFSM();
+    ShootApplyOutput();
 
     // 反馈数据,目前暂时没有要设定的反馈数据,后续可能增加应用离线监测以及卡弹反馈
     // PubPushMessage(shoot_pub, (void *)&shoot_feedback_data);
