@@ -33,14 +33,12 @@ static void SuperCapRxCallback(can_instance *_instance)
 
 ```c
 SuperCap_Init_Config_s capconfig = {
-		.can_config = {
-			.can_handle = &hcan1,
-			.rx_id = 0x301,
-			.tx_id = 0x302
-		},
-		.recv_data_len = 4*sizeof(uint16_t),
-		.send_data_len = sizeof(uint8_t)
-	};
+        .can_config = {
+            .can_handle = &hcan1,
+            .rx_id = 0x301,
+            .tx_id = 0x302
+        },
+    };
 SuperCapInstance *ins =SuperCapInit(&capconfig);
 ```
 
