@@ -11,6 +11,7 @@
 
 /* 舵轮参数 */
 #define WHEEL_SPEED_SCALE (360.0f / PERIMETER_WHEEL * REDUCTION_RATIO_WHEEL)  // 轮速转换系数:m/s -> deg/s (线速度/周长×360°×减速比)
+#define CHASSIS_FEEDBACK_RC 0.03f
 
 static Publisher_t *chassis_pub;                    // 用于发布底盘的数据
 static Subscriber_t *chassis_sub;                   // 用于订阅底盘的控制命令
@@ -30,12 +31,22 @@ static float steer_angle[4];           // 各轮角度(度)
 static float target_wheel_speed[4];    // 目标轮速(度/秒)
 static float target_steer_angle[4];    // 目标舵面角度(度)
 static int8_t wheel_dir_flag[4] = {1, 1, 1, 1};  // 轮速方向标志
+static uint32_t feedback_cnt; // 反馈解算时间戳
 
 // 舵面偏移角度数组
 static const float steer_offset[4] = {
     RF_WHEEL_POS_OFFSET_ANGLE, RB_WHEEL_POS_OFFSET_ANGLE,
     LB_WHEEL_POS_OFFSET_ANGLE, LF_WHEEL_POS_OFFSET_ANGLE
 };
+
+static float Clampf(float value, float min, float max)
+{
+    if (value > max)
+        return max;
+    if (value < min)
+        return min;
+    return value;
+}
 
 
 /**
@@ -128,6 +139,55 @@ static void SetMotorReference()
     }
 }
 
+/**
+ * @brief 根据轮毂/舵面反馈反解底盘实际速度
+ */
+static void UpdateChassisFeedback()
+{
+    float dt = DWT_GetDeltaT(&feedback_cnt);
+    float wheel_vx[4];
+    float wheel_vy[4];
+    float vx_raw;
+    float vy_raw;
+    float wz_from_x;
+    float wz_from_y;
+    float wz_raw;
+    float alpha;
+
+    if (dt < 0.0001f)
+        dt = 0.0001f;
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        float wheel_linear_speed = wheel_motor[i]->measure.speed_aps / WHEEL_SPEED_SCALE;
+        float wheel_heading = (steer_motor[i]->measure.total_angle - steer_offset[i]) * DEGREE_2_RAD;
+        wheel_vx[i] = wheel_linear_speed * arm_cos_f32(wheel_heading);
+        wheel_vy[i] = wheel_linear_speed * arm_sin_f32(wheel_heading);
+    }
+
+    vx_raw = (wheel_vx[0] + wheel_vx[1] + wheel_vx[2] + wheel_vx[3]) * 0.25f;
+    vy_raw = (wheel_vy[0] + wheel_vy[1] + wheel_vy[2] + wheel_vy[3]) * 0.25f;
+
+    if (CHASSIS_RY_M > 1e-4f)
+        wz_from_x = ((wheel_vx[0] - wheel_vx[2]) + (wheel_vx[1] - wheel_vx[3])) / (4.0f * CHASSIS_RY_M);
+    else
+        wz_from_x = 0.0f;
+
+    if (CHASSIS_RX_M > 1e-4f)
+        wz_from_y = ((wheel_vy[0] - wheel_vy[1]) + (wheel_vy[3] - wheel_vy[2])) / (4.0f * CHASSIS_RX_M);
+    else
+        wz_from_y = 0.0f;
+
+    wz_raw = 0.5f * (wz_from_x + wz_from_y);
+
+    alpha = dt / (CHASSIS_FEEDBACK_RC + dt);
+    alpha = Clampf(alpha, 0.0f, 1.0f);
+
+    chassis_feedback_data.real_vx += alpha * (vx_raw - chassis_feedback_data.real_vx);
+    chassis_feedback_data.real_vy += alpha * (vy_raw - chassis_feedback_data.real_vy);
+    chassis_feedback_data.real_wz += alpha * (wz_raw - chassis_feedback_data.real_wz);
+}
+
 void AGVChassisInit()
 {
     // 轮毂电机初始化配置(速度环)
@@ -207,6 +267,11 @@ void AGVChassisInit()
     // 发布订阅初始化
     chassis_sub = SubRegister("chassis_cmd", sizeof(Chassis_Ctrl_Cmd_s));
     chassis_pub = PubRegister("chassis_feed", sizeof(Chassis_Upload_Data_s));
+
+    chassis_feedback_data.real_vx = 0.0f;
+    chassis_feedback_data.real_vy = 0.0f;
+    chassis_feedback_data.real_wz = 0.0f;
+    feedback_cnt = DWT->CYCCNT;
 }
 
 void AGVChassisTask()
@@ -219,11 +284,9 @@ void AGVChassisTask()
     
     // 设置电机参考值
     SetMotorReference();
-    
-    // 反馈数据更新(可选,根据需要实现)
-    // chassis_feedback_data.real_vx = ...;
-    // chassis_feedback_data.real_vy = ...;
-    // chassis_feedback_data.real_wz = ...;
+
+    // 反馈数据更新
+    UpdateChassisFeedback();
     
     // 发布反馈数据
     PubPushMessage(chassis_pub, (void *)&chassis_feedback_data);

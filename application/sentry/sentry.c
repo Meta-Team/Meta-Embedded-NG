@@ -25,8 +25,9 @@ void SentryInit()
     AUTOCMDInit();
     AGVChassisInit();
     GimbalInit();
-    // ShootInit();
+    ShootInit();
     SentryOSTaskInit();
+    HAL_GPIO_WritePin(POWER_24V_2_GPIO_Port, POWER_24V_2_Pin, GPIO_PIN_SET);
     __enable_irq();
 }
 
@@ -36,7 +37,7 @@ void SentryControlTask()
     AUTOCMDTask();
     AGVChassisTask();
     GimbalTask();
-    // ShootTask();
+    ShootTask();
 }
 
 void SentrySensorTask()

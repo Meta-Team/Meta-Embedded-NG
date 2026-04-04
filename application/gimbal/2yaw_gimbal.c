@@ -93,11 +93,10 @@ void GimbalTask()
     // 后续增加未收到数据的处理
     SubGetMessage(gimbal_sub, &gimbal_cmd_recv);
 
-    switch (gimbal_cmd_recv.chassis_mode)
+    switch (gimbal_cmd_recv.gimbal_mode)
     {
-    case 0:
-    case 1:
-    case 2:
+        case GIMBAL_IMU:
+        case GIMBAL_LOCK:
         float target_imu_angle = gimbal_cmd_recv.pitch;
         float imu_error = target_imu_angle - gimbal_IMU_data->Pitch;
         float mit_target_angle = xm_motor->measure.position  + 1.0 * imu_error * DEGREE_2_RAD;
@@ -124,7 +123,22 @@ void GimbalTask()
         DJIMotorSetRef(yaw_motor, gimbal_cmd_recv.yaw);
         XMMotorEnable(xm_motor);
         XMMotorSetRef(xm_motor, mit_target_angle, mit_target_speed, 0);
-        // XMMotorSetRef(xm_motor, -1, 0, 0);
+        break;
+    default:
+        break;
+    }
+
+    switch (gimbal_cmd_recv.gimbal_mode)
+    {
+    case GIMBAL_IMU:
+        DJIMotorChangeFeed(yaw_motor, ANGLE_LOOP, OTHER_FEED);
+        DJIMotorChangeFeed(yaw_motor, SPEED_LOOP, OTHER_FEED);
+        DJIMotorSetRef(yaw_motor, gimbal_cmd_recv.yaw);
+        break;
+    case GIMBAL_LOCK:
+        DJIMotorChangeFeed(yaw_motor, ANGLE_LOOP, MOTOR_FEED);
+        DJIMotorChangeFeed(yaw_motor, SPEED_LOOP, MOTOR_FEED);
+        DJIMotorSetRef(yaw_motor, YAW_CHASSIS_ALIGN_DEG);
         break;
     default:
         break;

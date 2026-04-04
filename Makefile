@@ -124,6 +124,7 @@ module/algorithm/crc16.c \
 module/algorithm/user_lib.c \
 module/BMI088/bmi088.c \
 module/daemon/daemon.c \
+module/dr_nav/dr_nav.c \
 module/imu/ins_task.c \
 module/master_machine/vision_26.c \
 module/master_machine/vision_protocol_26.c \
@@ -252,6 +253,7 @@ C_INCLUDES =  \
 -Imodule/algorithm \
 -Imodule/BMI088 \
 -Imodule/daemon \
+-Imodule/dr_nav \
 -Imodule/imu \
 -Imodule/master_machine \
 -Imodule/message_center \

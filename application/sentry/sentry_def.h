@@ -6,16 +6,17 @@
 #define ONE_BOARD
 
 #define VISION_USE_VCP
+#define DEBUG
 
-/* 底盘参数 */
-#define YAW_CHASSIS_ALIGN_DEG 295   // 云台和底盘对齐指向相同方向时的电机角度值,若对云台有机械改动需要修改
+/* 云台参数 */
+#define YAW_CHASSIS_ALIGN_DEG 197   // 云台和底盘对齐指向相同方向时的电机角度值,若对云台有机械改动需要修改
 #define PITCH_HORIZON_RAD -1        // 云台处于水平位置时电机弧度值,若对云台有机械改动需要修改
 #define PITCH_MAX_RAD 0.5           // 云台竖直方向最大角度 (电机编码弧度)
 #define PITCH_MIN_RAD -1.5          // 云台竖直方向最小角度 (电机编码弧度)
 #define PITCH_MAX_VEL 1             // 云台竖直方向最大速度 (电机编码弧度)
 #define PITCH_MIN_VEL -1           // 云台竖直方向最小速度 (电机编码弧度)
 
-/* 底盘参数 */
+/* 发射参数 */
 #define ONE_BULLET_DELTA_ANGLE 36    // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
 #define REDUCTION_RATIO_LOADER (54.74f / 25.16f)  // 3508拨盘电机的减速比,未装减速箱,拨盘齿轮减速比
 #define NUM_PER_CIRCLE 10            // 拨盘一圈的装载量
@@ -46,6 +47,13 @@ typedef enum
     CHASSIS_ROTATE,            // 小陀螺模式
 } Chassis_Mode_e;
 
+// 云台模式设置
+typedef enum
+{
+    GIMBAL_IMU = 0,           // IMU控制云台
+    GIMBAL_LOCK,              // 云台电机强制锁定到0
+} Gimbal_Mode_e;
+
 // cmd发布的底盘控制数据,由chassis订阅
 typedef struct
 {
@@ -70,7 +78,7 @@ typedef struct
     // yaw, pitch的含义由模式决定
     float yaw;
     float pitch;
-    Chassis_Mode_e chassis_mode;
+    Gimbal_Mode_e gimbal_mode;
 } Gimbal_Ctrl_Cmd_s;
 
 typedef struct

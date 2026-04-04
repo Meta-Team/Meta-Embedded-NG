@@ -121,7 +121,7 @@ void VTMCMDInit()
     // gimbal_cmd_send.pitch = PITCH_HORIZON_RAD;
     gimbal_cmd_send.yaw = 0;
     gimbal_cmd_send.pitch = 0;
-    gimbal_cmd_send.chassis_mode = CHASSIS_NO_FOLLOW;
+    gimbal_cmd_send.gimbal_mode = GIMBAL_IMU;
 
     // yaw_gimbal = YAW_CHASSIS_ALIGN_DEG;
     // pitch_gimbal = PITCH_HORIZON_RAD;
@@ -182,7 +182,7 @@ static void VTMControlSet()
         // 云台
         gimbal_cmd_send.yaw = yaw_gimbal;
         gimbal_cmd_send.pitch = pitch_gimbal;
-        gimbal_cmd_send.chassis_mode = CHASSIS_NO_FOLLOW;
+        gimbal_cmd_send.gimbal_mode = GIMBAL_IMU;
         break;
     case 1: // 底盘跟随云台
         // 底盘
@@ -194,7 +194,7 @@ static void VTMControlSet()
         // 云台
         gimbal_cmd_send.yaw = yaw_gimbal;
         gimbal_cmd_send.pitch = pitch_gimbal;
-        gimbal_cmd_send.chassis_mode = CHASSIS_FOLLOW_GIMBAL_YAW;
+        gimbal_cmd_send.gimbal_mode = GIMBAL_IMU;
         break;
     case 2: // 小陀螺
         // 底盘
@@ -206,7 +206,7 @@ static void VTMControlSet()
         // 云台
         gimbal_cmd_send.yaw = yaw_gimbal;
         gimbal_cmd_send.pitch = pitch_gimbal;
-        gimbal_cmd_send.chassis_mode = CHASSIS_ROTATE;
+        gimbal_cmd_send.gimbal_mode = GIMBAL_IMU;
         break;
     default:
         break;
