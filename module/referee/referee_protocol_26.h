@@ -139,8 +139,8 @@ typedef enum
     LEN_robot_interaction_data_header = 6, // 0x0301 机器人交互数据段头
     LEN_robot_interaction_data_max = LEN_robot_interaction_data_header + REFEREE_INTERACTIVE_DATA_MAX_LEN,
     LEN_map_command = 12,                  // 0x0303 选手端小地图交互数据
-    LEN_map_robot_data = 24,               // 0x0305 选手端小地图接收雷达数据
-    LEN_map_data = 103,                    // 0x0307 选手端小地图接收路径数据
+    LEN_map_robot_data = 48,               // 0x0305 选手端小地图接收雷达数据
+    LEN_map_data = 105,                    // 0x0307 选手端小地图接收路径数据(含发送者ID)
     LEN_custom_info = 34,                  // 0x0308 选手端小地图接收机器人数据
 
     // 图传链路
@@ -476,24 +476,38 @@ typedef struct
 } map_command_t;
 
 
-/* ID: 0x0305 Byte: 24 选手端小地图接收雷达数据 */
+/* ID: 0x0305 Byte: 48 选手端小地图接收雷达数据 (单位: cm) */
 typedef struct
 {
-    uint16_t hero_position_x;
-    uint16_t hero_position_y;
-    uint16_t engineer_position_x;
-    uint16_t engineer_position_y;
-    uint16_t infantry_3_position_x;
-    uint16_t infantry_3_position_y;
-    uint16_t infantry_4_position_x;
-    uint16_t infantry_4_position_y;
-    uint16_t reserved0;
-    uint16_t reserved1;
-    uint16_t sentry_position_x;
-    uint16_t sentry_position_y;
+    // 对方机器人坐标
+    uint16_t opponent_hero_position_x;
+    uint16_t opponent_hero_position_y;
+    uint16_t opponent_engineer_position_x;
+    uint16_t opponent_engineer_position_y;
+    uint16_t opponent_infantry_3_position_x;
+    uint16_t opponent_infantry_3_position_y;
+    uint16_t opponent_infantry_4_position_x;
+    uint16_t opponent_infantry_4_position_y;
+    uint16_t opponent_aerial_position_x;
+    uint16_t opponent_aerial_position_y;
+    uint16_t opponent_sentry_position_x;
+    uint16_t opponent_sentry_position_y;
+    // 己方机器人坐标
+    uint16_t ally_hero_position_x;
+    uint16_t ally_hero_position_y;
+    uint16_t ally_engineer_position_x;
+    uint16_t ally_engineer_position_y;
+    uint16_t ally_infantry_3_position_x;
+    uint16_t ally_infantry_3_position_y;
+    uint16_t ally_infantry_4_position_x;
+    uint16_t ally_infantry_4_position_y;
+    uint16_t ally_aerial_position_x;
+    uint16_t ally_aerial_position_y;
+    uint16_t ally_sentry_position_x;
+    uint16_t ally_sentry_position_y;
 } map_robot_data_t;
 
-/* ID: 0x0307 Byte: 103 选手端小地图接收路径数据 */
+/* ID: 0x0307 Byte: 105 选手端小地图接收路径数据(含发送者ID) */
 typedef struct
 {
     uint8_t intention;          // 意图 1:攻击 2:防守 3:移动
