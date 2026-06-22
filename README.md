@@ -1,7 +1,7 @@
 # Meta-Embedded-NG
 
-> 面向大疆 **DM-MC02（STM32H723VGT6）** 控制板的 RoboMaster 机器人电控固件。
-> RoboMaster robot control firmware for the DJI **DM-MC02 (STM32H723VGT6)** board.
+> 面向达妙 **DM-MC02（STM32H723VGT6）** 控制板的 RoboMaster 机器人电控固件。
+> RoboMaster robot control firmware for the DaMiao **DM-MC02 (STM32H723VGT6)** board.
 
 [![MCU](https://img.shields.io/badge/MCU-STM32H723VGT6-blue)](#)
 [![Board](https://img.shields.io/badge/Board-DM--MC02-orange)](#)
