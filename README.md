@@ -16,7 +16,7 @@
 
 ### 项目简介
 
-**Meta-Embedded-NG** 是一套用于 RoboMaster 比赛机器人的嵌入式电控固件。它在湖南大学跃鹿战队开源框架 [`basic_framework`](https://github.com/HNUYueLuRM/basic_framework) 的基础上做了大量修改，将原本面向 STM32F407（大疆 C 板）的代码移植并适配到了基于 **STM32H723** 的 **大疆 DM-MC02** 控制板。
+**Meta-Embedded-NG** 是一套用于 RoboMaster 比赛机器人的嵌入式电控固件。它在湖南大学跃鹿战队开源框架 [`basic_framework`](https://github.com/HNUYueLuRM/basic_framework) 的基础上做了大量修改，将原本面向 STM32F407（大疆 C 板）的代码移植并适配到了基于 **STM32H723** 的 **达妙 DM-MC02** 控制板。
 
 项目沿用了原框架优秀的设计思想：
 
@@ -29,7 +29,7 @@
 | 项目 | 说明 |
 | --- | --- |
 | 主控 MCU | STM32H723VGT6（Cortex-M7，最高 550 MHz，1 MB Flash） |
-| 控制板 | 大疆 DM-MC02 |
+| 控制板 | 达妙 DM-MC02 |
 | 板载 IMU | BMI088（SPI 接口，含温度补偿与在线标定） |
 | 链接脚本 | `STM32H723XG_FLASH.ld` |
 | RTOS | FreeRTOS |
@@ -117,7 +117,7 @@ make GCC_PATH=/path/to/gcc-arm-none-eabi/bin
 
 ### Overview
 
-**Meta-Embedded-NG** is embedded control firmware for RoboMaster competition robots. It is heavily modified from the Hunan University YueLu Team's open-source [`basic_framework`](https://github.com/HNUYueLuRM/basic_framework), porting and adapting code originally targeting the STM32F407 (DJI C-board) to the **STM32H723**-based **DJI DM-MC02** control board.
+**Meta-Embedded-NG** is embedded control firmware for RoboMaster competition robots. It is heavily modified from the Hunan University YueLu Team's open-source [`basic_framework`](https://github.com/HNUYueLuRM/basic_framework), porting and adapting code originally targeting the STM32F407 (DJI C-board) to the **STM32H723**-based **DaMiao DM-MC02** control board.
 
 The project keeps the original framework's core design ideas:
 
@@ -130,7 +130,7 @@ The project keeps the original framework's core design ideas:
 | Item | Detail |
 | --- | --- |
 | MCU | STM32H723VGT6 (Cortex-M7, up to 550 MHz, 1 MB Flash) |
-| Board | DJI DM-MC02 |
+| Board | DaMiao DM-MC02 |
 | Onboard IMU | BMI088 (SPI, with temperature compensation & online calibration) |
 | Linker script | `STM32H723XG_FLASH.ld` |
 | RTOS | FreeRTOS |
