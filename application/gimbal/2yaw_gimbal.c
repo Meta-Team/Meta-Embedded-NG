@@ -1,4 +1,4 @@
-#include "gimbal.h"
+#include "2yaw_gimbal.h"
 #include "sentry_def.h"
 #include "dji_motor.h"
 #include "xm_motor.h"
