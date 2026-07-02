@@ -1,0 +1,110 @@
+#include "infantry_task.h"
+
+osThreadId controlTaskHandle;
+osThreadId motorTaskHandle;
+osThreadId sensorTaskHandle;
+osThreadId commTaskHandle;
+osThreadId WDTTaskHandle;
+
+void InfantryOSTaskInit(void)
+{
+    osThreadDef(controltask, StartControlTask, osPriorityNormal, 0, 512);
+    controlTaskHandle = osThreadCreate(osThread(controltask), NULL);
+
+    osThreadDef(motortask, StartMotorTask, osPriorityNormal, 0, 256);
+    motorTaskHandle = osThreadCreate(osThread(motortask), NULL);
+
+    osThreadDef(sensortask, StartSensorTask, osPriorityNormal, 0, 256);
+    sensorTaskHandle = osThreadCreate(osThread(sensortask), NULL);
+
+    osThreadDef(commtask, StartCommTask, osPriorityNormal, 0, 256);
+    commTaskHandle = osThreadCreate(osThread(commtask), NULL);
+
+    osThreadDef(wdttask, StartWDTTask, osPriorityNormal, 0, 256);
+    WDTTaskHandle = osThreadCreate(osThread(wdttask), NULL);
+}
+
+__attribute__((noreturn)) void StartControlTask(void const *argument)
+{
+    static float control_dt;
+    static float control_start;
+    (void)argument;
+    LOGINFO("[freeRTOS] CONTROL Task Start");
+    for (;;)
+    {
+        control_start = DWT_GetTimeline_ms();
+        InfantryControlTask();
+        control_dt = DWT_GetTimeline_ms() - control_start;
+        if (control_dt > 1)
+            LOGERROR("[freeRTOS] CONTROL Task is being DELAY! dt = [%f]", &control_dt);
+        osDelay(1);
+    }
+}
+
+__attribute__((noreturn)) void StartMotorTask(void const *argument)
+{
+    static float motor_dt;
+    static float motor_start;
+    (void)argument;
+    LOGINFO("[freeRTOS] MOTOR Task Start");
+    for (;;)
+    {
+        motor_start = DWT_GetTimeline_ms();
+        MotorControlTask();
+        motor_dt = DWT_GetTimeline_ms() - motor_start;
+        if (motor_dt > 1)
+            LOGERROR("[freeRTOS] MOTOR Task is being DELAY! dt = [%f]", &motor_dt);
+        osDelay(1);
+    }
+}
+
+__attribute__((noreturn)) void StartSensorTask(void const *argument)
+{
+    static float sensor_dt;
+    static float sensor_start;
+    (void)argument;
+    LOGINFO("[freeRTOS] SENSOR Task Start");
+    for (;;)
+    {
+        sensor_start = DWT_GetTimeline_ms();
+        InfantrySensorTask();
+        sensor_dt = DWT_GetTimeline_ms() - sensor_start;
+        if (sensor_dt > 1)
+            LOGERROR("[freeRTOS] SENSOR Task is being DELAY! dt = [%f]", &sensor_dt);
+        osDelay(1);
+    }
+}
+
+__attribute__((noreturn)) void StartCommTask(void const *argument)
+{
+    static float comm_dt;
+    static float comm_start;
+    (void)argument;
+    LOGINFO("[freeRTOS] COMM Task Start");
+    for (;;)
+    {
+        comm_start = DWT_GetTimeline_ms();
+        InfantryCommTask();
+        comm_dt = DWT_GetTimeline_ms() - comm_start;
+        if (comm_dt > 1)
+            LOGERROR("[freeRTOS] COMM Task is being DELAY! dt = [%f]", &comm_dt);
+        osDelay(10);
+    }
+}
+
+__attribute__((noreturn)) void StartWDTTask(void const *argument)
+{
+    static float wdt_dt;
+    static float wdt_start;
+    (void)argument;
+    LOGINFO("[freeRTOS] WDT Task Start");
+    for (;;)
+    {
+        wdt_start = DWT_GetTimeline_ms();
+        InfantryWDTTask();
+        wdt_dt = DWT_GetTimeline_ms() - wdt_start;
+        if (wdt_dt > 1)
+            LOGERROR("[freeRTOS] WDT Task is being DELAY! dt = [%f]", &wdt_dt);
+        osDelay(10);
+    }
+}

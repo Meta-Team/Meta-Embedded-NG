@@ -99,14 +99,13 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
-application/chassis/agv_chassis.c \
+application/chassis/omni_chassis.c \
 application/cmd/auto_cmd.c \
 application/cmd/dt7_cmd.c \
 application/cmd/vtm_cmd.c \
-application/gimbal/2yaw_gimbal.c \
-application/sentry/sentry.c \
-application/sentry/sentry_task.c \
-application/shoot/auto_ammo_booster.c \
+application/gimbal/gimbal.c \
+application/infantry/infantry_task.c \
+application/infantry/infantry.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \
 bsp/dwt/bsp_dwt.c \
@@ -237,7 +236,7 @@ C_INCLUDES =  \
 -Iapplication/chassis \
 -Iapplication/cmd \
 -Iapplication/gimbal \
--Iapplication/sentry \
+-Iapplication/infantry \
 -Iapplication/shoot \
 -Ibsp \
 -Ibsp/can \

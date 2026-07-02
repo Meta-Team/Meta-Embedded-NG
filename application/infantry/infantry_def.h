@@ -1,0 +1,117 @@
+#ifndef INFANTRY_DEF_H
+#define INFANTRY_DEF_H
+
+#include <stdint.h>
+
+#define ONE_BOARD
+
+#define VISION_USE_VCP
+#define DEBUG
+
+/* 云台参数 */
+#define YAW_CHASSIS_ALIGN_DEG 197   // 云台和底盘对齐指向相同方向时的电机角度值,若对云台有机械改动需要修改
+#define PITCH_HORIZON_DEG 0         // 云台处于水平位置时的目标 IMU pitch 角度(度)
+// pitch 轴为 GM6020,以电机机械编码角度(度)限位; total_angle 上电时清零,相对上电位置,需硬件标定
+#define PITCH_MAX_DEG 30            // 云台竖直方向最大角度 (GM6020 机械 total_angle, 度),硬件标定
+#define PITCH_MIN_DEG -30          // 云台竖直方向最小角度 (GM6020 机械 total_angle, 度),硬件标定
+
+/* 发射参数 */
+#define ONE_BULLET_DELTA_ANGLE 36    // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
+#define REDUCTION_RATIO_LOADER (54.74f / 25.16f)  // 3508拨盘电机的减速比,未装减速箱,拨盘齿轮减速比
+#define NUM_PER_CIRCLE 10            // 拨盘一圈的装载量
+
+/* 底盘参数 */
+#define CHASSIS_RY (326.0f / 2.0f)     // 纵向轮距(前进后退方向),单位为mm(毫米)
+#define CHASSIS_RX (326.0f / 2.0f)     // 横向轮距(左右平移方向),单位为mm(毫米)
+#define CHASSIS_RX_M (CHASSIS_RX / 1000.0f)  // 转换为米
+#define CHASSIS_RY_M (CHASSIS_RY / 1000.0f)  // 转换为米
+#define CENTER_GIMBAL_OFFSET_X 0
+#define CENTER_GIMBAL_OFFSET_Y 0
+#define RADIUS_WHEEL 58.0f           // 轮子半径,单位为mm(毫米)
+#define RADIUS_WHEEL_M (RADIUS_WHEEL / 1000.0f)  // 转换为米
+#define PERIMETER_WHEEL (RADIUS_WHEEL_M * 2 * PI) // 轮子周长
+#define REDUCTION_RATIO_WHEEL 19.0f  // 电机减速比
+
+#pragma pack(1)
+// 底盘模式设置
+typedef enum
+{
+    CHASSIS_ZERO_FORCE = 0,    // 电流零输入
+    CHASSIS_NO_FOLLOW,         // 不跟随，允许全向平移
+    CHASSIS_FOLLOW_GIMBAL_YAW, // 跟随模式，底盘叠加角度环控制
+    CHASSIS_ROTATE,            // 小陀螺模式
+} Chassis_Mode_e;
+
+// 云台模式设置
+typedef enum
+{
+    GIMBAL_IMU = 0,           // IMU控制云台
+    GIMBAL_LOCK,              // 云台电机强制锁定到0
+} Gimbal_Mode_e;
+
+// cmd发布的底盘控制数据,由chassis订阅
+typedef struct
+{
+    // 控制部分,采用底盘坐标系
+    float vx;           // 前进方向速度 (m/s)
+    float vy;           // 横移方向速度 (m/s)
+    float wz;           // 旋转速度 (rad/s)
+    Chassis_Mode_e chassis_mode;
+} Chassis_Ctrl_Cmd_s;
+
+// chassis发布的底盘反馈数据,由cmd订阅
+typedef struct
+{
+    float real_vx;
+    float real_vy;
+    float real_wz;
+} Chassis_Upload_Data_s;
+
+// cmd发布的底盘控制数据,由gimbal订阅
+typedef struct
+{
+    // yaw, pitch的含义由模式决定
+    float yaw;
+    float pitch;
+    Gimbal_Mode_e gimbal_mode;
+} Gimbal_Ctrl_Cmd_s;
+
+typedef struct
+{
+    float yaw_deg;
+    float yaw_speed;
+} Gimbal_Upload_Data_s;
+
+// 发射模式设置
+typedef enum
+{
+    SHOOT_OFF = 0,
+    SHOOT_ON,
+} shoot_mode_e;
+typedef enum
+{
+    FRICTION_OFF = 0, // 摩擦轮关闭
+    FRICTION_ON,      // 摩擦轮开启
+} friction_mode_e;
+
+typedef enum
+{
+    LOAD_STOP = 0,  // 停止发射
+    LOAD_REVERSE,   // 反转
+    LOAD_1_BULLET,  // 单发
+    LOAD_3_BULLET,  // 三发
+    LOAD_BURSTFIRE, // 连发
+} loader_mode_e;
+
+typedef struct
+{
+    shoot_mode_e shoot_mode;
+    loader_mode_e load_mode;
+    friction_mode_e friction_mode;
+    // Bullet_Speed_e bullet_speed; // 弹速枚举
+    // uint8_t rest_heat;
+    float shoot_rate; // 连续发射的射频,unit per s,发/秒
+} Shoot_Ctrl_Cmd_s;
+
+#pragma pack()
+#endif // !INFANTRY_DEF_H
