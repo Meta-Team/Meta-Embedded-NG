@@ -19,6 +19,7 @@
 
 void SentryInit()
 {
+    uint32_t primask = __get_PRIMASK();
     __disable_irq();
     BSPInit();
     // VTMCMDInit();
@@ -28,7 +29,8 @@ void SentryInit()
     ShootInit();
     SentryOSTaskInit();
     HAL_GPIO_WritePin(POWER_24V_2_GPIO_Port, POWER_24V_2_Pin, GPIO_PIN_SET);
-    __enable_irq();
+    // __enable_irq();
+    __set_PRIMASK(primask);
 }
 
 void SentryControlTask()
@@ -55,6 +57,6 @@ void SentryCommTask()
 
 void SentryWDTTask()
 {
-    // DaemonTask();
-    // HAL_IWDG_Refresh(&hiwdg1);
+    DaemonTask();
+    HAL_IWDG_Refresh(&hiwdg1);
 }
