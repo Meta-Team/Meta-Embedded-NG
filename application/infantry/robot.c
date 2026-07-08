@@ -1,7 +1,7 @@
 // app
 #include "2yaw_gimbal.h"
 #include "agv_chassis.h"
-#include "sentry.h"
+#include "robot.h"
 // #include "vtm_cmd.h"
 #include "auto_cmd.h"
 #include "auto_ammo_booster.h"
@@ -9,7 +9,7 @@
 // module
 #include "daemon.h"
 #include "ins_task.h"
-#include "sentry_task.h"
+#include "robot_task.h"
 #include "vision_26.h"
 
 // bsp
@@ -17,46 +17,46 @@
 
 #include "iwdg.h"
 
-void SentryInit()
+void RobotInit()
 {
     uint32_t primask = __get_PRIMASK();
     __disable_irq();
     BSPInit();
-    // VTMCMDInit();
-    AUTOCMDInit();
+    VTMCMDInit();
+    // AUTOCMDInit();
     AGVChassisInit();
-    GimbalInit();
-    ShootInit();
-    SentryOSTaskInit();
+    // GimbalInit();
+    // ShootInit();
+    RobotOSTaskInit();
     HAL_GPIO_WritePin(POWER_24V_2_GPIO_Port, POWER_24V_2_Pin, GPIO_PIN_SET);
     // __enable_irq();
     __set_PRIMASK(primask);
 }
 
-void SentryControlTask()
+void RobotControlTask()
 {
-    // VTMCMDTask();
-    AUTOCMDTask();
+    VTMCMDTask();
+    // AUTOCMDTask();
     AGVChassisTask();
-    GimbalTask();
-    ShootTask();
+    // GimbalTask();
+    // ShootTask();
 }
 
-void SentrySensorTask()
+void RobotSensorTask()
 {
-    INS_Task();
-    GimbalDataTask();
+    // INS_Task();
+    // GimbalDataTask();
 }
 
-void SentryCommTask()
+void RobotCommTask()
 {
     // RefereeTask();
-    VisionTask();
+    // VisionTask();
     // SuperCapTask();
 }
 
-void SentryWDTTask()
+void RobotWDTTask()
 {
-    DaemonTask();
+    // DaemonTask();
     HAL_IWDG_Refresh(&hiwdg1);
 }

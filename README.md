@@ -52,7 +52,7 @@
 
 ```
 Meta-Embedded-NG/
-├── application/      # 机器人行为：底盘、云台、发射、指令分发、哨兵
+├── application/      # 机器人行为：底盘、云台、发射、指令分发、各机器人（哨兵/步兵）
 ├── module/           # 可复用算法与设备驱动（电机、IMU、消息中心等）
 ├── bsp/              # 板级支持包，封装 STM32H7 片上外设
 ├── Core/             # CubeMX 生成的外设/FreeRTOS/中断代码（Inc + Src）
@@ -66,7 +66,7 @@ Meta-Embedded-NG/
 
 ### 软件架构
 
-- **application/**：`chassis`（底盘运动学/功率限制）、`gimbal`（云台姿态控制）、`shoot`（摩擦轮 + 拨弹）、`cmd`（指令分发，消费遥控/键鼠输入并发布控制量）、`sentry`（哨兵专用行为）。机器人类型、双板模式与标定偏置在 `application/robot_def.h` 中配置。
+- **application/**：`chassis`（底盘运动学/功率限制）、`gimbal`（云台姿态控制）、`shoot`（摩擦轮 + 拨弹）、`cmd`（指令分发，消费遥控/键鼠输入并发布控制量），以及各机器人目录 `sentry`（哨兵）、`infantry`（步兵），每个机器人目录含统一入口 `robot.c`/`robot_task.c` 与专属参数 `<robot>_def.h`。机器人类型在构建时经 `make ROBOT=<robot>` 选择，通用消息契约与选择器见 `application/robot_def.h`。
 - **module/**：电机驱动（`motor/`：DJI、DM、XM、舵机、步进）、`algorithm`（PID、卡尔曼滤波、LQR、EKF 姿态解算、CRC）、`message_center`、`daemon`、`BMI088`、`imu`、`encoder`、`can_comm`（多板 CAN 通信）、`super_cap`（超级电容）、`referee`（裁判系统/UI）、`remote`（DT7 遥控）、`master_machine`、`standard_cmd`、`unicomm`、`alarm`。
 - **bsp/**：`can`、`usart`、`spi`、`iic`、`pwm`、`adc`、`gpio`、`log`、`usb`、`flash`、`dwt`。
 - **FreeRTOS 任务**：INS 姿态解算（约 1 kHz）、电机控制、系统监控、机器人主逻辑等并行运行。
@@ -77,22 +77,34 @@ Meta-Embedded-NG/
 
 依赖 **GNU Arm Embedded 工具链**（`arm-none-eabi-gcc`）。
 
-```bash
-# 构建（生成 build/Meta-Embedded-NG.elf / .hex / .bin / .map）
-make
+> ⚠️ **首次构建前请手动创建 `build/` 目录**。Makefile 的 `mkdir` 规则不会自动创建父目录，全新检出的仓库若没有 `build/`，构建会报错 `mkdir: cannot create directory 'build/<robot>'`。
 
-# 清理 build/ 目录
+```bash
+# 首次构建前手动创建 build 目录（若已存在可跳过）
+mkdir build
+
+# 按机器人种类构建（ROBOT 默认为 sentry）
+# -j 启用并行编译；可用 -j<N> 限制并发数，如 -j8
+make -j ROBOT=sentry      # 生成 build/sentry/Meta-Embedded-NG-sentry.elf / .hex / .bin / .map
+make -j ROBOT=infantry    # 生成 build/infantry/Meta-Embedded-NG-infantry.elf / .hex / .bin / .map
+make -j                   # 等价于 make -j ROBOT=sentry
+
+# 清理当前机器人的 build/<robot>/ 目录
 make clean
 
 # 指定工具链路径而不修改 PATH
-make GCC_PATH=/path/to/gcc-arm-none-eabi/bin
+make -j ROBOT=infantry GCC_PATH=/path/to/gcc-arm-none-eabi/bin
 ```
+
+> 每种机器人各自编译到独立的 `build/<robot>/` 子目录，切换机器人无需先 `make clean`。
 
 > 仓库未提供烧录目标（flash target）。请使用团队的调试器/烧录器（如 OpenOCD + CMSIS-DAP、Ozone 等）将生成的 `.hex`/`.bin` 烧录到板子。
 
 ### 配置说明
 
-- 机器人类型、双板（底盘板/云台板）模式、云台编码器偏置等通过 `application/robot_def.h` 中的宏配置。
+- **机器人类型在构建时选择**：`make ROBOT=sentry|infantry` 会传入 `-DROBOT_SENTRY` / `-DROBOT_INFANTRY`，并编译对应的 `application/<robot>/` 目录。
+- 各模块间通用的消息契约（底盘/云台/发射的枚举与结构体）与机器人选择器统一放在 `application/robot_def.h`；各机器人专属的物理参数（轮距、云台限位、拨盘参数等）放在 `application/<robot>/<robot>_def.h`。
+- 新增一种机器人：把 `application/sentry/` 复制为 `application/<new>/`，在 `robot_def.h` 增加一条 `#elif defined(ROBOT_<NEW>)`，并在 Makefile 的机器人变体块中增加一条 `else ifeq ($(ROBOT),<new>)`。
 - BMI088 支持上电在线标定，标定相关参数见 `module/BMI088/bmi088.md`。
 
 ### 代码规范与贡献
@@ -153,7 +165,7 @@ The core three-layer architecture, Message Center design, and coding conventions
 
 ```
 Meta-Embedded-NG/
-├── application/      # Robot behavior: chassis, gimbal, shoot, cmd dispatch, sentry
+├── application/      # Robot behavior: chassis, gimbal, shoot, cmd dispatch, per-robot dirs (sentry/infantry)
 ├── module/           # Reusable algorithms & device drivers (motors, IMU, message center...)
 ├── bsp/              # Board support package wrapping STM32H7 on-chip peripherals
 ├── Core/             # CubeMX-generated peripheral/FreeRTOS/interrupt code (Inc + Src)
@@ -167,7 +179,7 @@ Meta-Embedded-NG/
 
 ### Architecture
 
-- **application/**: `chassis` (kinematics / power limiting), `gimbal` (attitude control), `shoot` (friction wheels + loader), `cmd` (command dispatch — consumes remote/keyboard input and publishes control setpoints), `sentry` (sentry-specific behavior). Robot type, dual-board mode, and calibration offsets are configured in `application/robot_def.h`.
+- **application/**: `chassis` (kinematics / power limiting), `gimbal` (attitude control), `shoot` (friction wheels + loader), `cmd` (command dispatch — consumes remote/keyboard input and publishes control setpoints), plus per-robot dirs `sentry` and `infantry` — each holds a common entry point `robot.c`/`robot_task.c` and its own params header `<robot>_def.h`. The robot type is selected at build time via `make ROBOT=<robot>`; the common message contract and variant selector live in `application/robot_def.h`.
 - **module/**: motor drivers (`motor/`: DJI, DM, XM, servo, stepper), `algorithm` (PID, Kalman filter, LQR, EKF attitude solver, CRC), `message_center`, `daemon`, `BMI088`, `imu`, `encoder`, `can_comm` (multi-board CAN), `super_cap`, `referee` (referee system / UI), `remote` (DT7 receiver), `master_machine`, `standard_cmd`, `unicomm`, `alarm`.
 - **bsp/**: `can`, `usart`, `spi`, `iic`, `pwm`, `adc`, `gpio`, `log`, `usb`, `flash`, `dwt`.
 - **FreeRTOS tasks**: INS attitude estimation (~1 kHz), motor control, system monitoring, and the main robot logic run concurrently.
@@ -178,22 +190,34 @@ Most submodules ship with a companion `*.md` doc (e.g. `module/message_center/me
 
 Requires the **GNU Arm Embedded toolchain** (`arm-none-eabi-gcc`).
 
-```bash
-# Build (produces build/Meta-Embedded-NG.elf / .hex / .bin / .map)
-make
+> ⚠️ **Create the `build/` directory before your first build.** The Makefile's `mkdir` rule does not create parent directories, so a fresh checkout without `build/` fails with `mkdir: cannot create directory 'build/<robot>'`.
 
-# Clean the build/ directory
+```bash
+# One-time: create the build directory before the first build (skip if it exists)
+mkdir build
+
+# Build per robot variant (ROBOT defaults to sentry)
+# -j enables parallel compilation; pass -j<N> to cap the job count, e.g. -j8
+make -j ROBOT=sentry      # produces build/sentry/Meta-Embedded-NG-sentry.elf / .hex / .bin / .map
+make -j ROBOT=infantry    # produces build/infantry/Meta-Embedded-NG-infantry.elf / .hex / .bin / .map
+make -j                   # same as make -j ROBOT=sentry
+
+# Clean the current variant's build/<robot>/ directory
 make clean
 
 # Use a specific toolchain without changing PATH
-make GCC_PATH=/path/to/gcc-arm-none-eabi/bin
+make -j ROBOT=infantry GCC_PATH=/path/to/gcc-arm-none-eabi/bin
 ```
+
+> Each robot compiles into its own `build/<robot>/` subdirectory, so switching robots needs no `make clean`.
 
 > There is no flash target in the Makefile. Use your team's debugger/programmer (e.g. OpenOCD + CMSIS-DAP, Ozone) to flash the generated `.hex`/`.bin` to the board.
 
 ### Configuration
 
-- Robot type, dual-board (chassis-board / gimbal-board) mode, and gimbal encoder offsets are set via macros in `application/robot_def.h`.
+- **Robot type is selected at build time**: `make ROBOT=sentry|infantry` passes `-DROBOT_SENTRY` / `-DROBOT_INFANTRY` and compiles the matching `application/<robot>/` directory.
+- The message contract shared across modules (chassis/gimbal/shoot enums and structs) and the robot selector live in `application/robot_def.h`; each robot's own physical params (wheel geometry, gimbal limits, loader params, etc.) live in `application/<robot>/<robot>_def.h`.
+- Adding a robot: copy `application/sentry/` to `application/<new>/`, add an `#elif defined(ROBOT_<NEW>)` arm in `robot_def.h`, and add an `else ifeq ($(ROBOT),<new>)` arm in the Makefile's robot-variant block.
 - BMI088 supports power-on online calibration; see `module/BMI088/bmi088.md` for parameters.
 
 ### Conventions & Contributing
