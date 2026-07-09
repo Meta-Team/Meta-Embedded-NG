@@ -6,7 +6,7 @@
 #include "vision_26.h"
 #include "daemon.h"
 #include "bsp_log.h"
-#include "sentry_def.h"
+#include "robot_def.h"
 #include "ins_task.h"
 #include "general_def.h"
 

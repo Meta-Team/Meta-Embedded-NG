@@ -1,5 +1,5 @@
 #include "ammo_booster.h"
-#include "sentry_def.h"
+#include "robot_def.h"
 #include "vtm_cmd.h"
 
 #include "dji_motor.h"

@@ -1,12 +1,14 @@
-#ifndef SENTRY_DEF_H
-#define SENTRY_DEF_H
+#ifndef INFANTRY_DEF_H
+#define INFANTRY_DEF_H
 
 #include <stdint.h>
 
 /*
- * sentry（哨兵）专属参数与配置。
+ * infantry（步兵）专属参数与配置。
  * 通用消息类型请见 application/robot_cmd_def.h，本文件只放机器人相关参数。
  * 本文件不应被直接 include，统一通过 application/robot_def.h 选择器引入。
+ *
+ * 说明：以下数值目前沿用 sentry 的占位值，请按步兵实际机械参数逐项标定后修改。
  */
 
 #define ONE_BOARD
@@ -43,4 +45,4 @@
 #define LB_WHEEL_POS_OFFSET_ANGLE 137.5f  // 左后轮
 #define LF_WHEEL_POS_OFFSET_ANGLE 145.0f  // 左前轮
 
-#endif // !SENTRY_DEF_H
+#endif // !INFANTRY_DEF_H

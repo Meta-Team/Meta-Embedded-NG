@@ -13,7 +13,9 @@
 ######################################
 # target
 ######################################
-TARGET = Meta-Embedded-NG
+# Robot variant selection: make ROBOT=sentry | infantry (default: sentry)
+ROBOT ?= sentry
+TARGET = Meta-Embedded-NG-$(ROBOT)
 
 
 ######################################
@@ -28,8 +30,8 @@ OPT = -Og
 #######################################
 # paths
 #######################################
-# Build path
-BUILD_DIR = build
+# Build path (per-robot to keep objects/artifacts isolated between variants)
+BUILD_DIR = build/$(ROBOT)
 
 ######################################
 # source
@@ -104,8 +106,6 @@ application/cmd/auto_cmd.c \
 application/cmd/dt7_cmd.c \
 application/cmd/vtm_cmd.c \
 application/gimbal/2yaw_gimbal.c \
-application/sentry/sentry.c \
-application/sentry/sentry_task.c \
 application/shoot/auto_ammo_booster.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \
@@ -237,7 +237,7 @@ C_INCLUDES =  \
 -Iapplication/chassis \
 -Iapplication/cmd \
 -Iapplication/gimbal \
--Iapplication/sentry \
+-Iapplication/$(ROBOT) \
 -Iapplication/shoot \
 -Ibsp \
 -Ibsp/can \
@@ -263,6 +263,18 @@ C_INCLUDES =  \
 -Imodule/remote \
 -Imodule/super_cap
 
+
+# ---- Robot variant selection: make ROBOT=sentry | infantry ----
+# Define the robot-type macro and append that robot's sources (dir name matches ROBOT).
+# The header path -Iapplication/$(ROBOT) is handled in C_INCLUDES; -Iapplication provides robot_def.h.
+ifeq ($(ROBOT),sentry)
+C_DEFS    += -DROBOT_SENTRY
+else ifeq ($(ROBOT),infantry)
+C_DEFS    += -DROBOT_INFANTRY
+else
+$(error Unknown ROBOT '$(ROBOT)'. Use ROBOT=sentry or ROBOT=infantry)
+endif
+C_SOURCES += application/$(ROBOT)/robot.c application/$(ROBOT)/robot_task.c
 
 
 # compile gcc flags

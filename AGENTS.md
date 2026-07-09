@@ -6,9 +6,20 @@ This is STM32H723 embedded RoboMaster controller firmware built from a CubeMX-st
 
 ## Build, Test, and Development Commands
 
-- `make`: builds `build/Meta-Embedded-NG.elf`, `.hex`, `.bin`, and the map file with `arm-none-eabi-gcc`.
-- `make clean`: removes the generated `build/` directory.
-- `make GCC_PATH=/path/to/gcc-arm-none-eabi/bin`: builds with a specific GNU Arm toolchain without changing `PATH`.
+**Create the `build/` directory before your first build** — the Makefile's `mkdir` rule does not create parent directories, so a fresh checkout without `build/` fails with `mkdir: cannot create directory 'build/<robot>'`:
+
+```sh
+mkdir build      # one-time, unless build/ already exists
+```
+
+The firmware is built per robot variant via the `ROBOT` variable (default `sentry`):
+
+- `make -j ROBOT=sentry` / `make -j ROBOT=infantry`: builds `build/<robot>/Meta-Embedded-NG-<robot>.elf`, `.hex`, `.bin`, and the map file with `arm-none-eabi-gcc`. The `-j` flag enables parallel compilation (pass `-j<N>` to cap the job count, e.g. `-j8`). Each variant compiles into its own `build/<robot>/` subdirectory, so switching robots needs no `make clean`.
+- `make -j`: same as `make -j ROBOT=sentry` (the default variant).
+- `make clean`: removes the current variant's `build/<robot>/` directory (run per `ROBOT`).
+- `make -j GCC_PATH=/path/to/gcc-arm-none-eabi/bin`: builds with a specific GNU Arm toolchain without changing `PATH`.
+
+The robot type is selected purely at build time: `make ROBOT=<robot>` passes `-DROBOT_<ROBOT>` and compiles `application/<robot>/` plus its params header. The common message contract and the variant selector live in `application/robot_def.h`; per-robot physical params live in `application/<robot>/<robot>_def.h`. Adding a robot = copy `application/sentry/` to `application/<new>/`, add an `#elif defined(ROBOT_<NEW>)` arm in `robot_def.h`, and add an `else ifeq ($(ROBOT),<new>)` arm in the Makefile's robot-variant block.
 
 There is no repository-level flash target in the Makefile. Use the generated artifacts with the team debugger/programmer workflow.
 

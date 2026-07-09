@@ -1,12 +1,12 @@
-#ifndef SENTRY_TASK_H
-#define SENTRY_TASK_H
+#ifndef ROBOT_TASK_H
+#define ROBOT_TASK_H
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
 
-#include "sentry.h"
+#include "robot.h"
 #include "motor_task.h"
 
 #include "bsp_dwt.h"
@@ -18,7 +18,7 @@ extern osThreadId sensorTaskHandle;
 extern osThreadId commTaskHandle;
 extern osThreadId WDTTaskHandle;
 
-void SentryOSTaskInit(void);
+void RobotOSTaskInit(void);
 
 void StartControlTask(void const *argument);
 void StartMotorTask(void const *argument);
@@ -26,4 +26,4 @@ void StartSensorTask(void const *argument);
 void StartCommTask(void const *argument);
 void StartWDTTask(void const *argument);
 
-#endif // !SENTRY_TASK_H
+#endif // !ROBOT_TASK_H

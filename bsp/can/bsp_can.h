@@ -17,7 +17,6 @@ typedef enum
 } CAN_ID_Type_e;
 
 /* can instance typedef, every module registered to CAN should have this variable */
-#pragma pack(1)
 typedef struct _
 {
     FDCAN_HandleTypeDef *can_handle; // can句柄
@@ -34,7 +33,6 @@ typedef struct _
     void (*can_module_callback)(struct _ *); // callback needs an instance to tell among registered ones
     void *id;                                // 使用can外设的模块指针(即id指向的模块拥有此can实例,是父子关系)
 } CANInstance;
-#pragma pack()
 
 /* CAN实例初始化结构体,将此结构体指针传入注册函数 */
 typedef struct

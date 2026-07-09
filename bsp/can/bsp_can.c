@@ -27,7 +27,7 @@ static uint8_t idx; // 全局CAN实例索引,每次有新的模块注册会自�
  */
 static void CANAddFilter(CANInstance *_instance)
 {
-    FDCAN_FilterTypeDef fdcan_filter_conf;
+    FDCAN_FilterTypeDef fdcan_filter_conf = {0};
     static uint8_t fdcan1_std_filter_idx = 0, fdcan2_std_filter_idx = 0, fdcan3_std_filter_idx = 0; // 标准ID过滤器索引
     static uint8_t fdcan1_ext_filter_idx = 0, fdcan2_ext_filter_idx = 0, fdcan3_ext_filter_idx = 0; // 扩展ID过滤器索引
 
@@ -72,10 +72,13 @@ static void CANAddFilter(CANInstance *_instance)
  */
 static void CANServiceInit()
 {
+    HAL_FDCAN_ConfigGlobalFilter(&hfdcan1, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
     HAL_FDCAN_Start(&hfdcan1);
     HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+    HAL_FDCAN_ConfigGlobalFilter(&hfdcan2, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
     HAL_FDCAN_Start(&hfdcan2);
     HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+    HAL_FDCAN_ConfigGlobalFilter(&hfdcan3, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE);
     HAL_FDCAN_Start(&hfdcan3);
     HAL_FDCAN_ActivateNotification(&hfdcan3, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 }
@@ -84,6 +87,11 @@ static void CANServiceInit()
 
 CANInstance *CANRegister(CAN_Init_Config_s *config)
 {
+    uint32_t rx_id_mask;
+    uint8_t add_filter = 1;
+
+    rx_id_mask = config->rx_id_mask == 0 ? ((config->id_type == CAN_ID_EXT) ? 0x1FFFFFFF : 0x7FF) : config->rx_id_mask;
+
     if (!idx)
     {
         CANServiceInit(); // 第一次注册,先进行硬件初始化
@@ -95,11 +103,14 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
             LOGERROR("[bsp_can] CAN instance exceeded MAX num, consider balance the load of CAN bus");
     }
     for (size_t i = 0; i < idx; i++)
-    { // 重复注册 | id重复
-        if (can_instance[i]->rx_id == config->rx_id && can_instance[i]->can_handle == config->can_handle)
+    {
+        if (can_instance[i]->can_handle == config->can_handle &&
+            can_instance[i]->id_type == config->id_type &&
+            can_instance[i]->rx_id == config->rx_id &&
+            can_instance[i]->rx_id_mask == rx_id_mask)
         {
-            while (1)
-                LOGERROR("[}bsp_can] CAN id crash ,tx [%d] or rx [%d] already registered", &config->tx_id, &config->rx_id);
+            add_filter = 0; // 多个模块共享同一个硬件过滤器,接收时再逐个分发
+            break;
         }
     }
     
@@ -120,16 +131,13 @@ CANInstance *CANRegister(CAN_Init_Config_s *config)
     instance->tx_id = config->tx_id; // 好像没用,可以删掉
     instance->rx_id = config->rx_id;
     instance->id_type = config->id_type; // 保存ID类型
-    // 设置rx_id_mask,如果用户未配置(0),则使用默认精确匹配
-    if (config->rx_id_mask == 0)
-        instance->rx_id_mask = (config->id_type == CAN_ID_EXT) ? 0x1FFFFFFF : 0x7FF;
-    else
-        instance->rx_id_mask = config->rx_id_mask;
+    instance->rx_id_mask = rx_id_mask;
     instance->last_rx_identifier = 0;
     instance->can_module_callback = config->can_module_callback;
     instance->id = config->id;
 
-    CANAddFilter(instance);         // 添加CAN过滤器规则
+    if (add_filter)
+        CANAddFilter(instance);     // 添加CAN过滤器规则
     can_instance[idx++] = instance; // 将实例保存到can_instance中
 
     return instance; // 返回can实例指针
@@ -196,7 +204,7 @@ void CANSetTxId(CANInstance *_instance, uint32_t tx_id)
 static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hcan, uint32_t fifox)
 {
     FDCAN_RxHeaderTypeDef rxconf;
-    uint8_t can_rx_buff[8];
+    uint8_t can_rx_buff[64];
     while (HAL_FDCAN_GetRxFifoFillLevel(_hcan, fifox)) // FIFO不为空,有可能在其他中断时有多帧数据进入
     {
         if (HAL_FDCAN_GetRxMessage(_hcan, fifox, &rxconf, can_rx_buff) != HAL_OK) // 从FIFO中获取数据
@@ -213,14 +221,12 @@ static void CANFIFOxCallback(FDCAN_HandleTypeDef *_hcan, uint32_t fifox)
             {
                 if (can_instance[i]->can_module_callback != NULL) // 回调函数不为空就调用
                 {
-                    // FDCAN的DataLength是DLC代码,根据文档实际就是长度
-                    can_instance[i]->rx_len = rxconf.DataLength; // 提取实际字节数
-                    if (can_instance[i]->rx_len > 8) can_instance[i]->rx_len = 8;  // 安全检查
+                    // 当前CANInstance只保存经典CAN 0-8字节负载,FD帧负载会被截断
+                    can_instance[i]->rx_len = rxconf.DataLength <= FDCAN_DLC_BYTES_8 ? rxconf.DataLength : 8;
                     can_instance[i]->last_rx_identifier = rx_id; // 保存完整的接收ID,用于解析扩展协议
                     memcpy(can_instance[i]->rx_buff, can_rx_buff, can_instance[i]->rx_len); // 消息拷贝到对应实例
                     can_instance[i]->can_module_callback(can_instance[i]);     // 触发回调进行数据解析和处理
                 }
-                return;
             }
         }
     }
