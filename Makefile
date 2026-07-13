@@ -102,6 +102,7 @@ Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
 application/chassis/agv_chassis.c \
+application/chassis/omni_chassis.c \
 application/cmd/auto_cmd.c \
 application/cmd/dt7_cmd.c \
 application/cmd/vtm_cmd.c \
