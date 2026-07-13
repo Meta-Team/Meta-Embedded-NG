@@ -107,6 +107,7 @@ application/cmd/auto_cmd.c \
 application/cmd/dt7_cmd.c \
 application/cmd/vtm_cmd.c \
 application/gimbal/2yaw_gimbal.c \
+application/gimbal/simple_gimbal.c \
 application/shoot/auto_ammo_booster.c \
 bsp/bsp_tools.c \
 bsp/can/bsp_can.c \

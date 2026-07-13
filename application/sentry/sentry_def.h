@@ -21,6 +21,8 @@
 #define PITCH_MIN_RAD -1.5          // 云台竖直方向最小角度 (电机编码弧度)
 #define PITCH_MAX_VEL 1             // 云台竖直方向最大速度 (电机编码弧度)
 #define PITCH_MIN_VEL -1           // 云台竖直方向最小速度 (电机编码弧度)
+#define PITCH_MAX_ECD_DEG 200.0f    // 云台pitch最大仰角对应的电机编码器角度(度),需实测标定
+#define PITCH_MIN_ECD_DEG 140.0f    // 云台pitch最大俯角对应的电机编码器角度(度),需实测标定
 
 /* 发射参数 */
 #define ONE_BULLET_DELTA_ANGLE 36    // 发射一发弹丸拨盘转动的距离,由机械设计图纸给出
