@@ -2,8 +2,8 @@
 #include "2yaw_gimbal.h"
 #include "agv_chassis.h"
 #include "robot.h"
-// #include "vtm_cmd.h"
-#include "auto_cmd.h"
+#include "vtm_cmd.h"
+// #include "auto_cmd.h"
 #include "auto_ammo_booster.h"
 
 // module
