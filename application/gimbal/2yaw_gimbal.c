@@ -8,6 +8,7 @@
 // #include "bmi088.h"
 #include "ins_task.h"
 #include "bsp_dwt.h"
+#include "user_lib.h"
 
 static attitude_t *gimbal_IMU_data;
 static float GyroDeg[3];
@@ -102,23 +103,8 @@ void GimbalTask()
         float mit_target_angle = xm_motor->measure.position  + 1.0 * imu_error * DEGREE_2_RAD;
         float mit_target_speed = xm_motor->measure.velocity - 1.0 * gimbal_IMU_data->Gyro[0];
 
-        if (mit_target_angle > PITCH_MAX_RAD)
-        {
-            mit_target_angle = PITCH_MAX_RAD;
-        }
-        else if (mit_target_angle < PITCH_MIN_RAD)
-        {
-            mit_target_angle = PITCH_MIN_RAD;
-        }
-
-        if (mit_target_speed > PITCH_MAX_VEL)
-        {
-            mit_target_speed = PITCH_MAX_VEL;
-        }
-        else if (mit_target_speed < PITCH_MIN_VEL)
-        {
-            mit_target_speed = PITCH_MIN_VEL;
-        }
+        mit_target_angle = float_constrain(mit_target_angle, PITCH_MIN_RAD, PITCH_MAX_RAD);
+        mit_target_speed = float_constrain(mit_target_speed, PITCH_MIN_VEL, PITCH_MAX_VEL);
 
         DJIMotorSetRef(yaw_motor, gimbal_cmd_recv.yaw);
         XMMotorEnable(xm_motor);

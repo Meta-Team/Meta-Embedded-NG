@@ -4,6 +4,7 @@
 #include "message_center.h"
 #include "general_def.h"
 #include "ins_task.h"
+#include "user_lib.h"
 
 static attitude_t *gimbal_IMU_data;
 static float GyroDeg[3];
@@ -116,14 +117,7 @@ void SimpleGimbalTask()
         float motor_angle = pitch_motor->measure.angle_single_round;
         float motor_target = motor_angle + imu_error;
 
-        if (motor_target > PITCH_MAX_ECD_DEG)
-        {
-            motor_target = PITCH_MAX_ECD_DEG;
-        }
-        else if (motor_target < PITCH_MIN_ECD_DEG)
-        {
-            motor_target = PITCH_MIN_ECD_DEG;
-        }
+        motor_target = float_constrain(motor_target, PITCH_MIN_ECD_DEG, PITCH_MAX_ECD_DEG);
 
         DJIMotorSetRef(pitch_motor, gimbal_IMU_data->Pitch + (motor_target - motor_angle));
         break;
