@@ -4,6 +4,7 @@
 #include "dji_motor.h"
 
 #include "general_def.h"
+#include "user_lib.h"
 #include "bsp_dwt.h"
 
 #include "arm_math.h"
@@ -38,16 +39,6 @@ static const float steer_offset[4] = {
     RF_WHEEL_POS_OFFSET_ANGLE, RB_WHEEL_POS_OFFSET_ANGLE,
     LB_WHEEL_POS_OFFSET_ANGLE, LF_WHEEL_POS_OFFSET_ANGLE
 };
-
-static float Clampf(float value, float min, float max)
-{
-    if (value > max)
-        return max;
-    if (value < min)
-        return min;
-    return value;
-}
-
 
 /**
  * @brief 舵轮运动学解算
@@ -181,7 +172,7 @@ static void UpdateChassisFeedback()
     wz_raw = 0.5f * (wz_from_x + wz_from_y);
 
     alpha = dt / (CHASSIS_FEEDBACK_RC + dt);
-    alpha = Clampf(alpha, 0.0f, 1.0f);
+    alpha = float_constrain(alpha, 0.0f, 1.0f);
 
     chassis_feedback_data.real_vx += alpha * (vx_raw - chassis_feedback_data.real_vx);
     chassis_feedback_data.real_vy += alpha * (vy_raw - chassis_feedback_data.real_vy);

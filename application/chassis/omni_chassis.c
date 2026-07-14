@@ -6,6 +6,7 @@
 
 #include "bsp_dwt.h"
 #include "general_def.h"
+#include "user_lib.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -44,15 +45,6 @@ static DJIMotorInstance *wheel_motor[4]; // [0]左前 [1]左后 [2]右后 [3]右
 static float target_wheel_speed[4];  // 目标电机轴速度，deg/s
 static float chassis_rotation_radius; // 轮组投影点到底盘中心的距离，m
 static uint32_t feedback_cnt;         // 反馈解算时间戳
-
-static float Clampf(float value, float min, float max)
-{
-    if (value > max)
-        return max;
-    if (value < min)
-        return min;
-    return value;
-}
 
 /**
  * @brief 将底盘速度指令解算为四个全向轮的目标电机轴速度
@@ -133,7 +125,7 @@ static void UpdateChassisFeedback(void)
     }
 
     // 对反馈速度进行一阶低通滤波，减小电机测速噪声
-    alpha = Clampf(dt / (CHASSIS_FEEDBACK_RC + dt), 0.0f, 1.0f);
+    alpha = float_constrain(dt / (CHASSIS_FEEDBACK_RC + dt), 0.0f, 1.0f);
     chassis_feedback_data.real_vx += alpha * (vx_raw - chassis_feedback_data.real_vx);
     chassis_feedback_data.real_vy += alpha * (vy_raw - chassis_feedback_data.real_vy);
     chassis_feedback_data.real_wz += alpha * (wz_raw - chassis_feedback_data.real_wz);
